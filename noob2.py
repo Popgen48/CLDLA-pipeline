@@ -3,7 +3,7 @@
 # TODO: get SNPs for a given sample, count the frequency of the maternal and paternal haplotype strings...
 
 import pysam
-import numpy
+window_size = 40
 
 # Input VCF and output hap file paths
 vcf_path = "OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf"
@@ -31,35 +31,51 @@ for record in vcf:
 
 vcf.close()
 
+print(f'#samples = {len(sample_records)}')
 #print(sample_records.keys())
 #print(f'{list(sample_records.keys())[0]}: {list(sample_records.values())[0]}')
 
 samples = {}
 
 # dictionary to store counts
-string_counts = {}
+string_ids = {}
+id1 = 1 # for individual haplotypes
+id2 = 1 # for combined haplotypes i.e. diplotype 
 
-for key, value in sample_records.items():
-    str1 = []
-    str2 = []
-    
-    for v in value:
-        str1.append(str(v[0] + 1))
-        str2.append(str(v[1] + 1))
-    
-    str1 = ''.join(str1)
-    str2 = ''.join(str2)
-    
-    samples[key] = [str1, str2]
-    
-    
-    # if str1 in string_counts:
-    #     string_counts[str1] += 1
-    # else:
-    #     string_counts[str1] = 1
-    # if str2 in string_counts:
-    #     string_counts[str2] += 1
-    # else:
-    #     string_counts[str2] = 1
-    
-print(f'{list(samples.keys())[0]}: {list(samples.values())[0]}')
+with open(hap_path, "w") as file:
+    i = 1
+    for key, value in sample_records.items():
+        str1 = []
+        str2 = []
+        
+        for v in value:
+            str1.append(str(v[0] + 1))
+            str2.append(str(v[1] + 1))
+        
+        str1 = ''.join(str1)
+        str2 = ''.join(str2)
+        
+        samples[key] = [str1, str2]
+        
+        substr1 = str1[:window_size]
+        substr2 = str2[:window_size]
+        combined_substr = substr1 + substr2
+        
+        if substr1 not in string_ids:
+            string_ids[substr1] = id1
+            id1 += 1
+        h1 = string_ids[substr1]
+        if substr2 not in string_ids:
+            string_ids[substr2] = id1
+            id1 += 1
+        h2 = string_ids[substr2]
+        if combined_substr not in string_ids:
+            string_ids[combined_substr] = id2
+            id2 += 1
+        d = string_ids[combined_substr]
+            
+        file.write(f'{i}\t{d}\t{h1}\t{h2}\t{substr1}\t{substr2}\n')
+        i += 1
+
+#print(f'{list(samples.keys())[0]}: {list(samples.values())[0]}')
+print(f'output wirten to {hap_path}')
