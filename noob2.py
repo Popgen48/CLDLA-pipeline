@@ -74,7 +74,7 @@ with open(hap_path, "w") as file:
             id2 += 1
         d = string_ids[combined_substr]
             
-        file.write(f'{i}\t{d}\t{h1}\t{h2}\t{substr1}\t{substr2}\n')
+        file.write(f'{i}\t{d}\t{h1}\t{h2}\t{substr1}\t{substr2}\n') # tab delimited for readability
         i += 1
 
 #print(f'{list(samples.keys())[0]}: {list(samples.values())[0]}')
