@@ -1,6 +1,4 @@
-# Simple script to extract the values from all the samples of a given .VCF file
-
-# TODO: get SNPs for a given sample, count the frequency of the maternal and paternal haplotype strings...
+# Simple script to extract the values from all the samples of a given .VCF file, assign them an id and store in a .hap file
 
 import pysam
 window_size = 40
