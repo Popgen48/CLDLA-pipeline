@@ -21,5 +21,5 @@ jobs:
       - name: Run python script with test data
         run: |
           $CONDA/bin/conda create -n create_haplo_env -c conda-forge -c bioconda pysam=0.20.0 pandas=2.1.1
-          conda activate create_haplo_env
+          $CONDA/bin/conda activate create_haplo_env
           python noob2.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40
