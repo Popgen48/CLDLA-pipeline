@@ -2,27 +2,44 @@
 import sys
 import pysam
 
+def get_homozygosity(list):
+    return (list[0] ** 2 + list[1] ** 2) / (sum(list) ** 2)
 
 # Input VCF and output hap file paths and window size (as in SNP count)
-def vcf_to_custom_haplo(vcf_path, hap_path, window_size):
+def vcf_to_custom_haplo(vcf_path, hap_path, map_path, window_size):
     window_size = int(window_size)
     vcf = pysam.VariantFile(vcf_path)
 
     # dictionary to store samples
     sample_records = {}
+    
+    # dictionary to store MAF
+    mafs = {}
+    
+    # dictionary to store MAF
+    hzgys = {}
 
     # Iterate through VCF records
     for record in vcf:
+        sample_maf = [0, 0]
         # Iterate through samples
         for sample in record.samples:
             sample_name = sample
             sample_values = record.samples[sample]["GT"]
+            sample_maf[record.samples[sample]["GT"][0]] += 1
+            sample_maf[record.samples[sample]["GT"][1]] += 1  
             # print(sample_values)
 
             if sample_name not in sample_records:
                 sample_records[sample_name] = []
 
             sample_records[sample_name].append(sample_values)
+            
+            minor_allele_freq = min(sample_maf) / sum(sample_maf)
+            mafs[record.id] = minor_allele_freq
+            
+            homozygosity = get_homozygosity(sample_maf)
+            hzgys[record.id] = homozygosity
 
     vcf.close()
 
@@ -55,6 +72,7 @@ def vcf_to_custom_haplo(vcf_path, hap_path, window_size):
             substr1 = str1[:window_size]
             substr2 = str2[:window_size]
             combined_substr = substr1 + substr2
+            combined_sbstr_rev = substr2 + substr1
 
             if substr1 not in string_ids:
                 string_ids[substr1] = id1
@@ -65,16 +83,29 @@ def vcf_to_custom_haplo(vcf_path, hap_path, window_size):
                 id1 += 1
             h2 = string_ids[substr2]
             if combined_substr not in string_ids:
-                string_ids[combined_substr] = id2
-                id2 += 1
+                if combined_sbstr_rev in string_ids:
+                    combined_substr = combined_sbstr_rev
+                else:
+                    string_ids[combined_substr] = id2
+                    id2 += 1
             d = string_ids[combined_substr]
 
             file.write(
                 f"{i}\t{d}\t{h1}\t{h2}\t{substr1}\t{substr2}\n"
             )  # tab delimited for readability
             i += 1
-    print(f"output wirten to {hap_path}")
+    print(f".hap output written to {hap_path}")
+    
+    with open(map_path, "w") as file:
+        i = 0
+        for key in mafs.keys():
+            if i == window_size:
+                break
+            file.write(f"{key}\t{mafs[key]}\t{hzgys[key]}\n")
+            i += 1
+    print(f".map output written to {map_path}")
+        
 
 
 if __name__ == "__main__":
-    vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3])
+    vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
