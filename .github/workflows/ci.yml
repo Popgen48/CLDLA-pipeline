@@ -2,8 +2,7 @@ name: vcf_to_custom_haplo_conversion
 
 on:
   push:
-    branches:
-      dev
+    branches: dev
 
 jobs:
   build-linux:
@@ -15,15 +14,15 @@ jobs:
 
       - name: Set up python 3.10.12
         uses: mamba-org/setup-micromamba@v1
-        with: 
-          micromamba-version: '1.3.1-0'
+        with:
+          micromamba-version: "1.3.1-0"
           environment-file: environment.yml
           init-shell: >-
             bash
             powershell
           cache-environment: true
-          post-cleanup: 'all'
+          post-cleanup: "all"
 
       - name: Run python script with test data
-        run: python vcf_to_hap.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40
-        shell: bash -el {0} 
+        run: python vcf_to_hapmap.py AutoSom21b.Chr_28.TxT.vcf.gz 40
+        shell: bash -el {0}
