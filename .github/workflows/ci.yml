@@ -14,8 +14,8 @@ jobs:
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
-        python-version:3.8
-      -name: Install dependencies
-       run: |
+        "python-version:3.8"
+      -name: Install dependencies and run the python script
+      run: 
          $CONDA/bin/conda env update --file environment.yml --name base
          python noob2.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40
