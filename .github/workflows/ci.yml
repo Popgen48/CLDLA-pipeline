@@ -10,12 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version:3.8
-      -name: Install dependencies and run the python script
-      run: 
-         $CONDA/bin/conda env update --file environment.yml --name base | 
-         python noob2.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40
+      - name: Checkout pipeline code
+        uses: actions/checkout@v3
+
+      - name: Set up python 3.8
+        uses: actions/setup-python@v2
+        with: 
+          python-version:3.8
+
+      - name: Run python script with test data
+        run: |
+          $CONDA/bin/conda env update --file environment.yml --name base 
+          python noob2.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40
