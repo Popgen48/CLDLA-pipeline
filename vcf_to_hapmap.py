@@ -122,4 +122,4 @@ def vcf_to_custom_haplo(vcf_path, window_size, window_number=1):
     
     
 if __name__ == "__main__":
-    vcf_to_custom_haplo(sys.argv[1], sys.argv[2])
+    vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3])
