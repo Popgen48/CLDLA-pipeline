@@ -1,7 +1,7 @@
 # Simple script to extract the values from all the samples of a given .VCF file, assign them an id and store in a .hap file
 
 import pysam
-import pandas
+
 window_size = 40
 
 # Input VCF and output hap file paths
@@ -41,8 +41,6 @@ string_ids = {}
 id1 = 1 # for individual haplotypes
 id2 = 1 # for combined haplotypes i.e. diplotype 
 
-df = pandas.DataFrame(columns=['sample_id', 'combined_id', 'id1', 'id2', 'haplotype1', 'haplotype2'])
-
 with open(hap_path, "w") as file:
     i = 1
     for key, value in sample_records.items():
@@ -75,10 +73,9 @@ with open(hap_path, "w") as file:
             id2 += 1
         d = string_ids[combined_substr]
         
-        df.loc[i-1] = [i, d, h1, h2, substr1, substr2]   
         file.write(f'{i}\t{d}\t{h1}\t{h2}\t{substr1}\t{substr2}\n') # tab delimited for readability
         i += 1
 
 #print(f'{list(samples.keys())[0]}: {list(samples.values())[0]}')
-df.to_csv('./output.csv')
+
 print(f'output wirten to {hap_path}')
