@@ -1,0 +1,21 @@
+name: vcf_to_custom_haplo_conversion
+
+on:
+  push:
+    branches:
+      dev
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version:3.8
+      -name: Install dependencies
+       run: |
+         $CONDA/bin/conda env update --file environment.yml --name base
+         python noob2.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40

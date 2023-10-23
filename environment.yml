@@ -1,0 +1,8 @@
+name: cldla_0.1.1
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  -conda-forge::pandas=2.1.1
+  -bioconda::pysam=0.20.0
