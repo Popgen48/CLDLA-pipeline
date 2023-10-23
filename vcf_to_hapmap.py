@@ -5,19 +5,17 @@ import pysam
 def get_homozygosity(list):
     return (list[0] ** 2 + list[1] ** 2) / (sum(list) ** 2)
 
-# Input VCF and output hap file paths and window size (as in SNP count)
-def vcf_to_custom_haplo(vcf_path, hap_path, map_path, window_size):
-    window_size = int(window_size)
-    vcf = pysam.VariantFile(vcf_path)
-
+def read_vcf(vcf_path):
     # dictionary to store samples
     sample_records = {}
     
     # dictionary to store MAF
     mafs = {}
-    
-    # dictionary to store MAF
+
+    # dictionary to store homozygosity
     hzgys = {}
+
+    vcf = pysam.VariantFile(vcf_path)
 
     # Iterate through VCF records
     for record in vcf:
@@ -44,8 +42,10 @@ def vcf_to_custom_haplo(vcf_path, hap_path, map_path, window_size):
     vcf.close()
 
     print(f"#samples = {len(sample_records)}")
-    # print(sample_records.keys())
-    # print(f'{list(sample_records.keys())[0]}: {list(sample_records.values())[0]}')
+    return sample_records, mafs, hzgys
+    
+def get_HAP(hap_path, sample_records, window_size, window_number):
+    window_size = int(window_size)
 
     samples = {}
 
@@ -69,8 +69,8 @@ def vcf_to_custom_haplo(vcf_path, hap_path, map_path, window_size):
 
             samples[key] = [str1, str2]
 
-            substr1 = str1[:window_size]
-            substr2 = str2[:window_size]
+            substr1 = str1[window_number-1:window_size]
+            substr2 = str2[window_number-1:window_size]
             combined_substr = substr1 + substr2
             combined_sbstr_rev = substr2 + substr1
 
@@ -95,7 +95,9 @@ def vcf_to_custom_haplo(vcf_path, hap_path, map_path, window_size):
             )  # tab delimited for readability
             i += 1
     print(f".hap output written to {hap_path}")
-    
+    return samples
+
+def get_MAP(map_path, mafs, hzgys, window_size, window_number):
     with open(map_path, "w") as file:
         i = 0
         for key in mafs.keys():
@@ -104,8 +106,20 @@ def vcf_to_custom_haplo(vcf_path, hap_path, map_path, window_size):
             file.write(f"{key}\t{mafs[key]}\t{hzgys[key]}\n")
             i += 1
     print(f".map output written to {map_path}")
-        
+    
 
-
+# Input VCF and output hap file paths and window size (as in SNP count)
+def vcf_to_custom_haplo(vcf_path, window_size, window_number=1):
+    animal = vcf_path.split(".")[0]
+    chromosome = vcf_path.split(".")[1]
+    
+    hap_path = f"{animal}.{chromosome}.{window_number}.hap"
+    map_path = f"{animal}.{chromosome}.{window_number}.map"
+    
+    sample_records, mafs, hzgys = read_vcf(vcf_path)
+    _ = get_HAP(hap_path, sample_records, window_size, window_number)
+    get_MAP(map_path, mafs, hzgys, window_size, window_number)
+    
+    
 if __name__ == "__main__":
-    vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    vcf_to_custom_haplo(sys.argv[1], sys.argv[2])
