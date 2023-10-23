@@ -25,5 +25,5 @@ jobs:
           post-cleanup: 'all'
 
       - name: Run python script with test data
-        run: python noob2.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40
+        run: python vcf_to_hap.py OUT_VCF_BEAGLE4_ALL_AutoSom21b_Chr28.TxT.vcf.gz output_1 40
         shell: bash -el {0} 
