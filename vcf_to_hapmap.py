@@ -4,9 +4,10 @@ import util
 import os
 
 # Input VCF and output hap file paths and window size (as in SNP count)
-def vcf_to_custom_haplo(vcf_path, window_size, window_number):
-    window_size = int(window_size)
-    window_number = int(window_number)
+def vcf_to_custom_haplo(arg_list):
+    vcf_path = str(arg_list[0])
+    window_size = int(arg_list[1])
+    window_number = int(arg_list[2])
     
     dataset = vcf_path.split(".")[0]
     chromosome = vcf_path.split(".")[1]
@@ -26,6 +27,3 @@ def vcf_to_custom_haplo(vcf_path, window_size, window_number):
     _ = util.get_HAP(hap_path, sample_genotypes)
     util.get_MAP(map_path, positions, hzgys)
     print(f"Generated .hap and .map for window {window_number+1}")
-    
-if __name__ == "__main__":
-    vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3])

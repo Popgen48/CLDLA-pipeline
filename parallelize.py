@@ -1,5 +1,6 @@
-import subprocess
+import multiprocessing
 import sys
+from vcf_to_hapmap import vcf_to_custom_haplo
 
 with open('record_counts.txt', 'r') as text_file:
     line = text_file.readline()
@@ -11,23 +12,16 @@ if record_count is None:
 
 
 
-def parallelize(vcf_path, window_size):
-    # number of windows
-    windows = [i for i in range(record_count - int(window_size) + 1)] 
+def parallelize(vcf_path, window_size, n_cores):
 
-    processes = []
+    arg_list = [(vcf_path, window_size, window_number) for window_number in range(record_count - int(window_size) + 1)]
 
-    for window_number in windows:
-        command = ['python3', 'vcf_to_hapmap.py', vcf_path, str(window_size), str(window_number)]
-        
-        # Start a new process for each instance
-        process = subprocess.Popen(command)
-        processes.append(process)
-        
-    print('Total processes created:', len(processes))
-    for process in processes:
-        process.wait()
+    pool = multiprocessing.Pool(int(n_cores))
+    pool.map(vcf_to_custom_haplo, arg_list)
+    pool.close()
+    pool.join()
+    
     print('All processes finished')
     
 if __name__ == "__main__":
-    parallelize(sys.argv[1], sys.argv[2])
+    parallelize(sys.argv[1], sys.argv[2], sys.argv[3])
