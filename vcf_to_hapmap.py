@@ -1,128 +1,26 @@
 # Simple script to extract the values from all the samples of a given .VCF file, assign them an id and store in a .hap file
+import util
+import json
 import sys
-import pysam
-
-def get_homozygosity(list):
-    return (list[0] ** 2 + list[1] ** 2) / (sum(list) ** 2)
-
-def get_maf(record):
-    mafs = [0, 0]
-    for val in record.samples:
-        if record.samples[val]["GT"][0] != None:
-            mafs[record.samples[val]["GT"][0]] += 1
-        if record.samples[val]["GT"][1] != None:
-            mafs[record.samples[val]["GT"][1]] += 1
-    return mafs
-
-def read_vcf(vcf_path):
-    # dictionary to store sample genotypes
-    sample_genotypes = {}
-    # dictionary to store MAF
-    mafs = {}
-    # dictionary to store homozygosity
-    hzgys = {}
-    # dictionary to store positions
-    positions = {}
-
-    vcf = pysam.VariantFile(vcf_path)
-
-    # Iterate through VCF records
-    for record in vcf:
-        # calculate maf only collect the genotypes if the maf is grt than 0
-        maf = get_maf(record)
-        
-        if maf[0] != 0 and maf[1] != 0:
-            # Iterate through samples
-            for sample in record.samples:
-                sample_values = record.samples[sample]["GT"]
-                if sample not in sample_genotypes:
-                    sample_genotypes[sample] = []
-
-                sample_genotypes[sample].append(sample_values)
-                
-            
-            if not record.id:
-                record.id = f"{record.chrom}_{record.pos}"
-            # While maf is collected here, it is not used in downstream analysis
-            mafs[record.id] = min(maf) / sum(maf)
-            
-            homozygosity = get_homozygosity(maf)
-            hzgys[record.id] = homozygosity
-            
-            positions[record.id] = record.pos / 1e6
-
-    vcf.close()
-
-    print(f"#valid samples = {len(sample_genotypes)}")
-    return sample_genotypes, positions, mafs, hzgys
     
-def get_HAP(hap_path, sample_genotypes, window_size, window_number):
-    window_size = int(window_size)
-
-    samples = {}
-
-    # dictionary to store counts
-    string_ids = {}
-    id1 = 1  # for individual haplotypes
-    id2 = 1  # for combined haplotypes i.e. diplotype
-
-    with open(hap_path, "w") as file:
-        i = 1
-        for key, value in sample_genotypes.items():
-            str1 = []
-            str2 = []
-
-            for v in value:
-                str1.append(str(v[0] + 1))
-                str2.append(str(v[1] + 1))
-
-            str1 = "".join(str1)
-            str2 = "".join(str2)
-
-            samples[key] = [str1, str2]
-
-            substr1 = str1[window_number:window_size+window_number]
-            substr2 = str2[window_number:window_size+window_number]
-            combined_substr = substr1 + substr2
-            combined_sbstr_rev = substr2 + substr1
-
-            if substr1 not in string_ids:
-                string_ids[substr1] = id1
-                id1 += 1
-            h1 = string_ids[substr1]
-            if substr2 not in string_ids:
-                string_ids[substr2] = id1
-                id1 += 1
-            h2 = string_ids[substr2]
-            if combined_substr not in string_ids:
-                if combined_sbstr_rev in string_ids:
-                    combined_substr = combined_sbstr_rev
-                else:
-                    string_ids[combined_substr] = id2
-                    id2 += 1
-            d = string_ids[combined_substr]
-
-            file.write(
-                f"{i}\t{d}\t{h1}\t{h2}\t{substr1}\t{substr2}\n"
-            )  # tab delimited for readability
-            i += 1
-    #print(f".hap output written to {hap_path}")
-    return samples
-
-def get_MAP(map_path, positions, hzgys, window_size, window_number):
-    with open(map_path, "w") as file:
-        for key in list(hzgys.keys())[window_number:window_size+window_number]:
-            file.write(f"{key}\t{positions[key]}\t{hzgys[key]}\n")
-    #print(f".map output written to {map_path}")
-    
-
 # Input VCF and output hap file paths and window size (as in SNP count)
-def vcf_to_custom_haplo(vcf_path, window_size, starting_window_number):
+def vcf_to_custom_haplo(window_size, starting_window_number):
     window_size = int(window_size)
-    dataset = vcf_path.split(".")[0]
-    chromosome = vcf_path.split(".")[1]
-
-    sample_genotypes, positions, mafs, hzgys = read_vcf(vcf_path)
+    starting_window_number = int(starting_window_number)
+        
+    with open('ds_info.json', 'r') as fp:
+        ds_info = json.load(fp)
+    with open('sample_genotypes.json', 'r') as fp:
+        sample_genotypes = json.load(fp)
+    with open('positions.json', 'r') as fp:
+        positions = json.load(fp)
+    with open('mafs.json', 'r') as fp:
+        mafs = json.load(fp)
+    with open('hzgys.json', 'r') as fp:
+        hzgys = json.load(fp)
+        
+    dataset = ds_info['dataset']
+    chromosome = ds_info['chromosome']
     
     #print(len(sample_genotypes), len(positions), len(hzgys))
     if len(positions) == len(hzgys):
@@ -133,20 +31,20 @@ def vcf_to_custom_haplo(vcf_path, window_size, starting_window_number):
     
     # If we want only the .hap and .map for a specific window (useful if running in parallel)
     # -1 for running all windows i.e. sequentially
-    if int(starting_window_number) != -1:
-        hap_path = f"{dataset}.{chromosome}.{starting_window_number}.hap"
-        map_path = f"{dataset}.{chromosome}.{starting_window_number}.map"
-        _ = get_HAP(hap_path, sample_genotypes, window_size, int(starting_window_number)-1)
-        get_MAP(map_path, positions, hzgys, window_size, int(starting_window_number)-1)
-        print(f"Generated .hap and .map for window {starting_window_number}")
-        return 
+    # if starting_window_number != -1:
+    hap_path = f"{dataset}.{chromosome}.{starting_window_number}.hap"
+    map_path = f"{dataset}.{chromosome}.{starting_window_number}.map"
+    _ = util.get_HAP(hap_path, sample_genotypes, window_size, int(starting_window_number)-1)
+    util.get_MAP(map_path, positions, hzgys, window_size, int(starting_window_number)-1)
+    print(f"Generated .hap and .map for window {starting_window_number}")
+    return exit(0)
     
-    for i in range(len(positions) - window_size + 1):
-        hap_path = f"{dataset}.{chromosome}.{i+1}.hap"
-        map_path = f"{dataset}.{chromosome}.{i+1}.map"
-        _ = get_HAP(hap_path, sample_genotypes, window_size, i)
-        get_MAP(map_path, positions, hzgys, window_size, i)
-        print(f"Generated .hap and .map for window {i+1}")
+    # for i in range(len(positions) - window_size + 1):
+    #     hap_path = f"{dataset}.{chromosome}.{i+1}.hap"
+    #     map_path = f"{dataset}.{chromosome}.{i+1}.map"
+    #     _ = util.get_HAP(hap_path, sample_genotypes, window_size, i)
+    #     util.get_MAP(map_path, positions, hzgys, window_size, i)
+    #     print(f"Generated .hap and .map for window {i+1}")
     
 if __name__ == "__main__":
-    vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3])
+    vcf_to_custom_haplo(sys.argv[1], sys.argv[2])
