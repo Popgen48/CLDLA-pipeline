@@ -14,11 +14,9 @@ def vcf_to_custom_haplo(vcf_path, window_size, window_number):
     sample_genotypes, positions, mafs, hzgys = util.read_vcf(vcf_path, window_size, window_number-1)
     
     #print(len(sample_genotypes), len(positions), len(hzgys))
-    if len(positions) == len(hzgys):
-        print("Iterating through records...")
-    else:
+    if len(positions) != len(hzgys):
         print("Number of records mismatch")
-        return exit(1)
+        return exit(1) 
     
     if not os.path.exists(f"./{dataset}/{chromosome}"):
         os.makedirs(f"./{dataset}/{chromosome}")
@@ -27,7 +25,7 @@ def vcf_to_custom_haplo(vcf_path, window_size, window_number):
     map_path = f"./{dataset}/{chromosome}/{dataset}.{chromosome}.{window_number}.map"
     _ = util.get_HAP(hap_path, sample_genotypes)
     util.get_MAP(map_path, positions, hzgys)
-    print(f"Generated .hap and .map for window {window_number}")
+    print(f"Generated .hap and .map for window {window_number+1}")
     
 if __name__ == "__main__":
     vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3])
