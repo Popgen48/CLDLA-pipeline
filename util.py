@@ -6,21 +6,17 @@ def get_homozygosity(list):
 def get_maf(record):
     mafs = [0, 0]
     for val in record.samples:
-        if record.samples[val]["GT"][0] != None:
-            mafs[record.samples[val]["GT"][0]] += 1
-        if record.samples[val]["GT"][1] != None:
-            mafs[record.samples[val]["GT"][1]] += 1
+        if record.samples[val]['GT'][0] != None:
+            mafs[record.samples[val]['GT'][0]] += 1
+        if record.samples[val]['GT'][1] != None:
+            mafs[record.samples[val]['GT'][1]] += 1
     return mafs
 
 def read_vcf(vcf_path, window_size, window_number):
-    # dictionary to store sample genotypes
-    sample_genotypes = {}
-    # dictionary to store MAF
-    mafs = {}
-    # dictionary to store homozygosity
-    hzgys = {}
-    # dictionary to store positions
-    positions = {}
+    sample_genotypes = {}   # dictionary to store sample genotypes
+    mafs = {}               # dictionary to store MAF
+    hzgys = {}              # dictionary to store homozygosity
+    positions = {}          # dictionary to store positions
 
     vcf = pysam.VariantFile(vcf_path)
 
@@ -37,14 +33,15 @@ def read_vcf(vcf_path, window_size, window_number):
         if maf[0] != 0 and maf[1] != 0:
             # Iterate through samples
             for sample in record.samples:
-                sample_values = record.samples[sample]["GT"]
+                sample_values = record.samples[sample]['GT']
                 if sample not in sample_genotypes:
                     sample_genotypes[sample] = []
 
                 sample_genotypes[sample].append(sample_values)
                 
             if not record.id:
-                record.id = f"{record.chrom}_{record.pos}"
+                record.id = f'{record.chrom}_{record.pos}'
+                
             # While maf is collected here, it is not used in downstream analysis
             mafs[record.id] = min(maf) / sum(maf)
             
@@ -57,30 +54,25 @@ def read_vcf(vcf_path, window_size, window_number):
 
     vcf.close()
 
-    # print(f"#valid records for window({window_number+1}) = {len(positions)}")
     return sample_genotypes, positions, mafs, hzgys
     
 def get_HAP(hap_path, sample_genotypes):
-
     samples = {}
+    string_ids = {}     # dictionary to store counts
+    id1 = 1             # for individual haplotypes
+    id2 = 1             # for combined haplotypes i.e. diplotype
 
-    # dictionary to store counts
-    string_ids = {}
-    id1 = 1  # for individual haplotypes
-    id2 = 1  # for combined haplotypes i.e. diplotype
-
-    with open(hap_path, "w") as file:
+    with open(hap_path, 'w') as file:
         i = 1
         for key, value in sample_genotypes.items():
             str1 = []
             str2 = []
-
             for v in value:
                 str1.append(str(v[0] + 1))
                 str2.append(str(v[1] + 1))
 
-            str1 = "".join(str1)
-            str2 = "".join(str2)
+            str1 = ''.join(str1)
+            str2 = ''.join(str2)
 
             samples[key] = [str1, str2]
 
@@ -104,14 +96,12 @@ def get_HAP(hap_path, sample_genotypes):
             d = string_ids[combined_substr]
 
             file.write(
-                f"{i}\t{d}\t{h1}\t{h2}\t{str1}\t{str2}\n"
+                f'{i}\t{d}\t{h1}\t{h2}\t{str1}\t{str2}\n'
             )  # tab delimited for readability
             i += 1
-    #print(f".hap output written to {hap_path}")
     return samples
 
 def get_MAP(map_path, positions, hzgys):
-    with open(map_path, "w") as file:
+    with open(map_path, 'w') as file:
         for key in hzgys.keys():
-            file.write(f"{key}\t{positions[key]}\t{hzgys[key]}\n")
-    #print(f".map output written to {map_path}")
+            file.write(f'{key}\t{positions[key]}\t{hzgys[key]}\n')
