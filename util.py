@@ -105,3 +105,10 @@ def get_MAP(map_path, positions, hzgys):
     with open(map_path, 'w') as file:
         for key in hzgys.keys():
             file.write(f'{key}\t{positions[key]}\t{hzgys[key]}\n')
+            
+def get_PAR(vcf_path, par_path, window_size, window_number):
+    with open('record_counts.txt', 'r') as text_file:
+        line = text_file.readline()
+        record_count = int(line.split(':')[1].strip()) if line.split(':')[0].strip() == vcf_path else None
+    with open(par_path, 'w') as file:
+        file.write(f'100\n100\n{window_size+1}\n{window_number+1 if window_number <= int(window_size/2) else int(window_size/2)+1}\n{record_count}')

@@ -1,5 +1,4 @@
 # Simple script to extract the values from all the samples of a given .VCF file, assign them an id and store in a .hap file
-import sys
 import util
 import os
 
@@ -21,10 +20,12 @@ def vcf_to_custom_haplo(arg_list):
     if not os.path.exists(f'./{dataset}/{chromosome}'):
         os.makedirs(f'./{dataset}/{chromosome}')
 
-    hap_path = f'./{dataset}/{chromosome}/{dataset}.{chromosome}.{window_number}.hap'
-    map_path = f'./{dataset}/{chromosome}/{dataset}.{chromosome}.{window_number}.map'
+    hap_path = f'./{dataset}/{chromosome}/{dataset}.{chromosome}.{window_number+1}.hap'
+    map_path = f'./{dataset}/{chromosome}/{dataset}.{chromosome}.{window_number+1}.map'
+    par_path = f'./{dataset}/{chromosome}/{dataset}.{chromosome}.{window_number+1}.par'
     
     _ = util.get_HAP(hap_path, sample_genotypes)
     util.get_MAP(map_path, positions, hzgys)
+    util.get_PAR(vcf_path, par_path, window_size, window_number)
     
-    print(f'Generated .hap and .map for window {window_number+1}')
+    print(f'Generated .hap, .map, and .par for window {window_number+1}')
