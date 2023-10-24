@@ -15,8 +15,8 @@ def get_maf(record):
     return mafs
 
 def read_vcf(vcf_path):
-    # dictionary to store samples
-    sample_records = {}
+    # dictionary to store sample genotypes
+    sample_genotypes = {}
     # dictionary to store MAF
     mafs = {}
     # dictionary to store homozygosity
@@ -28,22 +28,22 @@ def read_vcf(vcf_path):
 
     # Iterate through VCF records
     for record in vcf:
-        
+        # calculate maf only collect the genotypes if the maf is grt than 0
         maf = get_maf(record)
         
         if maf[0] != 0 and maf[1] != 0:
             # Iterate through samples
             for sample in record.samples:
                 sample_values = record.samples[sample]["GT"]
-                if sample not in sample_records:
-                    sample_records[sample] = []
+                if sample not in sample_genotypes:
+                    sample_genotypes[sample] = []
 
-                sample_records[sample].append(sample_values)
+                sample_genotypes[sample].append(sample_values)
                 
             
             if not record.id:
                 record.id = f"{record.chrom}_{record.pos}"
-            
+            # While maf is collected here, it is not used in downstream analysis
             mafs[record.id] = min(maf) / sum(maf)
             
             homozygosity = get_homozygosity(maf)
@@ -53,10 +53,10 @@ def read_vcf(vcf_path):
 
     vcf.close()
 
-    print(f"#valid samples = {len(sample_records)}")
-    return sample_records, positions, mafs, hzgys
+    print(f"#valid samples = {len(sample_genotypes)}")
+    return sample_genotypes, positions, mafs, hzgys
     
-def get_HAP(hap_path, sample_records, window_size, window_number):
+def get_HAP(hap_path, sample_genotypes, window_size, window_number):
     window_size = int(window_size)
 
     samples = {}
@@ -68,7 +68,7 @@ def get_HAP(hap_path, sample_records, window_size, window_number):
 
     with open(hap_path, "w") as file:
         i = 1
-        for key, value in sample_records.items():
+        for key, value in sample_genotypes.items():
             str1 = []
             str2 = []
 
@@ -120,22 +120,22 @@ def get_MAP(map_path, positions, hzgys, window_size, window_number):
 # Input VCF and output hap file paths and window size (as in SNP count)
 def vcf_to_custom_haplo(vcf_path, window_size):
     window_size = int(window_size)
-    animal = vcf_path.split(".")[0]
+    dataset = vcf_path.split(".")[0]
     chromosome = vcf_path.split(".")[1]
 
-    sample_records, positions, mafs, hzgys = read_vcf(vcf_path)
+    sample_genotypes, positions, mafs, hzgys = read_vcf(vcf_path)
     
-    print(len(sample_records), len(positions), len(hzgys))
+    print(len(sample_genotypes), len(positions), len(hzgys))
     if len(positions) == len(hzgys):
-        print("Iterating through samples...pushing window by 1 SNP")
+        print("Iterating through records...pushing window by 1 SNP")
     else:
-        print("Number of samples mismatch")
-        return
+        print("Number of record mismatch")
+        return exit(1)
     
     for i in range(len(positions) - window_size + 1):
-        hap_path = f"{animal}.{chromosome}.{i+1}.hap"
-        map_path = f"{animal}.{chromosome}.{i+1}.map"
-        _ = get_HAP(hap_path, sample_records, window_size, i)
+        hap_path = f"{dataset}.{chromosome}.{i+1}.hap"
+        map_path = f"{dataset}.{chromosome}.{i+1}.map"
+        _ = get_HAP(hap_path, sample_genotypes, window_size, i)
         get_MAP(map_path, positions, hzgys, window_size, i)
         print(f"Generated .hap and .map for window {i+1}")
     
