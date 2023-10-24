@@ -81,8 +81,8 @@ def get_HAP(hap_path, sample_genotypes, window_size, window_number):
 
             samples[key] = [str1, str2]
 
-            substr1 = str1[window_number:window_size]
-            substr2 = str2[window_number:window_size]
+            substr1 = str1[window_number:window_size+window_number]
+            substr2 = str2[window_number:window_size+window_number]
             combined_substr = substr1 + substr2
             combined_sbstr_rev = substr2 + substr1
 
@@ -117,7 +117,7 @@ def get_MAP(map_path, positions, hzgys, window_size, window_number):
     
 
 # Input VCF and output hap file paths and window size (as in SNP count)
-def vcf_to_custom_haplo(vcf_path, window_size):
+def vcf_to_custom_haplo(vcf_path, window_size, starting_window_number):
     window_size = int(window_size)
     dataset = vcf_path.split(".")[0]
     chromosome = vcf_path.split(".")[1]
@@ -131,6 +131,16 @@ def vcf_to_custom_haplo(vcf_path, window_size):
         print("Number of records mismatch")
         return exit(1)
     
+    # If we want only the .hap and .map for a specific window (useful if running in parallel)
+    # -1 for running all windows i.e. sequentially
+    if int(starting_window_number) != -1:
+        hap_path = f"{dataset}.{chromosome}.{starting_window_number}.hap"
+        map_path = f"{dataset}.{chromosome}.{starting_window_number}.map"
+        _ = get_HAP(hap_path, sample_genotypes, window_size, int(starting_window_number)-1)
+        get_MAP(map_path, positions, hzgys, window_size, int(starting_window_number)-1)
+        print(f"Generated .hap and .map for window {starting_window_number}")
+        return 
+    
     for i in range(len(positions) - window_size + 1):
         hap_path = f"{dataset}.{chromosome}.{i+1}.hap"
         map_path = f"{dataset}.{chromosome}.{i+1}.map"
@@ -139,4 +149,4 @@ def vcf_to_custom_haplo(vcf_path, window_size):
         print(f"Generated .hap and .map for window {i+1}")
     
 if __name__ == "__main__":
-    vcf_to_custom_haplo(sys.argv[1], sys.argv[2])
+    vcf_to_custom_haplo(sys.argv[1], sys.argv[2], sys.argv[3])
