@@ -111,9 +111,8 @@ def get_HAP(hap_path, sample_genotypes, window_size, window_number):
 
 def get_MAP(map_path, positions, hzgys, window_size, window_number):
     with open(map_path, "w") as file:
-        for key in list(hzgys.keys())[window_number:window_size]:
+        for key in list(hzgys.keys())[window_number:window_size+window_number]:
             file.write(f"{key}\t{positions[key]}\t{hzgys[key]}\n")
-
     #print(f".map output written to {map_path}")
     
 
@@ -125,11 +124,11 @@ def vcf_to_custom_haplo(vcf_path, window_size):
 
     sample_genotypes, positions, mafs, hzgys = read_vcf(vcf_path)
     
-    print(len(sample_genotypes), len(positions), len(hzgys))
+    #print(len(sample_genotypes), len(positions), len(hzgys))
     if len(positions) == len(hzgys):
         print("Iterating through records...pushing window by 1 SNP")
     else:
-        print("Number of record mismatch")
+        print("Number of records mismatch")
         return exit(1)
     
     for i in range(len(positions) - window_size + 1):
