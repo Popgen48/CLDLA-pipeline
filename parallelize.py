@@ -1,10 +1,19 @@
 import subprocess
 import sys
 
-# number of windows
-windows = [i for i in range(10)] # to be taken via prior calculation
+with open('record_counts.txt', 'r') as text_file:
+    line = text_file.readline()
+    record_count = int(line.split(':')[1].strip()) if line.split(':')[0].strip() == sys.argv[1] else None
+
+if record_count is None:
+    print("Record count not found")
+    exit(1)
+
+
 
 def parallelize(vcf_path, window_size):
+    # number of windows
+    windows = [i for i in range(record_count - int(window_size) + 1)] 
 
     processes = []
 
@@ -15,6 +24,7 @@ def parallelize(vcf_path, window_size):
         process = subprocess.Popen(command)
         processes.append(process)
         
+    print('Total processes created:', len(processes))
     for process in processes:
         process.wait()
     print('All processes finished')
