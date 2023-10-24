@@ -2,6 +2,7 @@
 
 import util
 import json
+import sys
 
 def initialize(vcf_path):
     dataset = vcf_path.split(".")[0]
@@ -30,5 +31,5 @@ def initialize(vcf_path):
         json.dump(hzgys, fp)
     print(f'hzgys.json written to file')
     
-    
-    
+if __name__ == "__main__":
+    initialize(sys.argv[1])  
