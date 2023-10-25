@@ -37,62 +37,51 @@ class MyWidget(QWidget):
         # Category 1
         groupbox1 = QGroupBox('Category 1')
         vbox1 = QVBoxLayout()
-        self.category1_fields = []  # Store references to QLineEdit widgets
-        self.category1_labels = []  # Store references to QLabel widgets
+        self.category1_fields = []  # Store references to widget labels and values)
         for i in ['C1 F1', 'C1 F2', 'C1 F3', 'C1 F4', 'C1 F5']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox1.addWidget(label)
             vbox1.addWidget(edit)
-            self.category1_labels.append(label.text())
-            self.category1_fields.append(edit)
+            self.category1_fields.append((label.text(), edit))
         groupbox1.setLayout(vbox1)
 
         # Category 2
         groupbox2 = QGroupBox('Category 2')
         vbox2 = QVBoxLayout()
         self.category2_fields = []
-        self.category2_labels = []
         for i in ['C2 F1', 'C2 F2', 'C2 F3', 'C2 F4', 'C2 F5']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox2.addWidget(label)
             vbox2.addWidget(edit)
-            self.category2_labels.append(label.text())
-            self.category2_fields.append(edit)
+            self.category2_fields.append((label.text(), edit))
         groupbox2.setLayout(vbox2)
 
         # Category 3
         groupbox3 = QGroupBox('Category 3')
         vbox3 = QVBoxLayout()
         self.category3_fields = []
-        self.category3_labels = []
         for i in ['C3 F1', 'C3 F2', 'C3 F3', 'C3 F4', 'C3 F5']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox3.addWidget(label)
             vbox3.addWidget(edit)
-            self.category3_labels.append(label.text())
-            self.category3_fields.append(edit)
+            self.category3_fields.append((label.text(), edit))
         groupbox3.setLayout(vbox3)
 
         # Category 4
         groupbox4 = QGroupBox('Category 4')
         vbox4 = QVBoxLayout()
         self.category4_fields = []  
-        self.category4_labels = []
         for i in ['C4 F1', 'C4 F2', 'C4 F3', 'C4 F4', 'C4 F5']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox4.addWidget(label)
             vbox4.addWidget(edit)
-            self.category4_labels.append(label.text())
-            self.category4_fields.append(edit)
+            self.category4_fields.append((label.text(),edit))
         groupbox4.setLayout(vbox4)
         
-        self.category_fields = [self.category1_fields, self.category2_fields, self.category3_fields, self.category4_fields]
-        self.category_labels = [self.category1_labels, self.category2_labels, self.category3_labels, self.category4_labels]
-
         # Add the group boxes to the grid layout
         grid.addWidget(groupbox1, 0, 0)
         grid.addWidget(groupbox2, 0, 1)
@@ -152,11 +141,8 @@ class MyWidget(QWidget):
     def on_submit(self):
         # Function to handle the "Submit" button click
         field_data = {}
-        for labels, fields in zip(self.category_labels, self.category_fields):
-            for label, value in zip(labels, fields):
-                field_name = label
-                field_value = value.text()
-                field_data[field_name] = field_value
+        for label, value in self.category1_fields + self.category2_fields + self.category3_fields + self.category4_fields:
+            field_data[label] = value.text()
 
         # Save the dictionary to a YAML file
         with open('parameters.yml', 'w') as yaml_file:
