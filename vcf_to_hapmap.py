@@ -24,9 +24,9 @@ def vcf_to_custom_haplo(vcf_path, window_size, window_number):
     map_path = f'{window_number+1}.map'
     par_path = f'.{window_number+1}.par'
     
-    _ = util.get_HAP(hap_path, sample_genotypes)
+    n_samples = util.get_HAP(hap_path, sample_genotypes)
     util.get_MAP(map_path, positions, hzgys)
-    util.get_PAR(vcf_path, par_path, window_size, window_number)
+    util.get_PAR(par_path, window_size, window_number, n_samples)
     
     print(f'Generated .hap, .map, and .par for window {window_number+1}')
 
