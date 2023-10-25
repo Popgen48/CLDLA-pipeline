@@ -1,6 +1,31 @@
 import sys
 import yaml
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog, QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog, QHBoxLayout, QMainWindow, QAction, QMessageBox
+
+class MyMainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        # Set the window title and size
+        self.setWindowTitle('cLDLA Parameters')
+        self.setGeometry(100, 100, 800, 600)  # Adjust the window size as needed
+
+        # Add a Help button to the title bar
+        help_action = QAction('Help', self)
+        help_action.setStatusTip('Show a basic help message')
+        help_action.triggered.connect(self.show_help_message)
+        self.menuBar().addAction(help_action)
+
+        # Create the central widget and set it
+        central_widget = MyWidget()
+        self.setCentralWidget(central_widget)
+
+    def show_help_message(self):
+        # Function to display a basic help message
+        help_message = "More information available at ..."
+        QMessageBox.information(self, 'Help', help_message)
 
 class MyWidget(QWidget):
     def __init__(self):
@@ -78,8 +103,8 @@ class MyWidget(QWidget):
 
         # Create a layout for the Load button and field to go side-by-side
         load_layout = QHBoxLayout()
-        load_layout.addWidget(self.file_path_field)
         load_layout.addWidget(load_button)
+        load_layout.addWidget(self.file_path_field)
 
         vbox = QVBoxLayout()
         vbox.addLayout(grid)
@@ -88,8 +113,7 @@ class MyWidget(QWidget):
 
         self.setLayout(vbox)
         self.setWindowTitle('cLDLA params')
-        self.resize(750, 600)
-        self.show()
+        self.resize(800, 600)
 
     def load_data(self):
         # Function to handle the "Load" button click
@@ -133,5 +157,6 @@ class MyWidget(QWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MyWidget()
+    window = MyMainWindow()
+    window.show()
     sys.exit(app.exec_())
