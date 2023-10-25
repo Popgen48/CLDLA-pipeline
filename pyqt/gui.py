@@ -1,40 +1,66 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLabel, QLineEdit
 
-class MyWindow(QWidget):
+class MyWidget(QWidget):
     def __init__(self):
         super().__init__()
+        self.initUI()
 
-        # Create labels
-        self.label1 = QLabel(self)
-        self.label1.setText('Keep sample:')
-        self.label1.move(50, 50)
+    def initUI(self):
+        grid = QGridLayout()
 
-        self.label2 = QLabel(self)
-        self.label2.setText('Remove sample:')
-        self.label2.move(50, 100)
+        # Category 1
+        groupbox1 = QGroupBox('Category 1')
+        vbox1 = QVBoxLayout()
+        for _ in range(5):
+            label = QLabel('Field:')
+            edit = QLineEdit()
+            vbox1.addWidget(label)
+            vbox1.addWidget(edit)
+        groupbox1.setLayout(vbox1)
 
-        # Create line edits
-        self.line_edit1 = QLineEdit(self)
-        self.line_edit1.move(150, 50)
+        # Category 2
+        groupbox2 = QGroupBox('Category 2')
+        vbox2 = QVBoxLayout()
+        for _ in range(5):
+            label = QLabel('Field:')
+            edit = QLineEdit()
+            vbox2.addWidget(label)
+            vbox2.addWidget(edit)
+        groupbox2.setLayout(vbox2)
 
-        self.line_edit2 = QLineEdit(self)
-        self.line_edit2.move(150, 100)
+        # Category 3
+        groupbox3 = QGroupBox('Category 3')
+        vbox3 = QVBoxLayout()
+        for _ in range(5):
+            label = QLabel('Field:')
+            edit = QLineEdit()
+            vbox3.addWidget(label)
+            vbox3.addWidget(edit)
+        groupbox3.setLayout(vbox3)
 
-        # Create button
-        self.button = QPushButton('Submit', self)
-        self.button.move(150, 150)
-        self.button.clicked.connect(self.submit)
+        # Category 4
+        groupbox4 = QGroupBox('Category 4')
+        vbox4 = QVBoxLayout()
+        for _ in range(5):
+            label = QLabel('Field:')
+            edit = QLineEdit()
+            vbox4.addWidget(label)
+            vbox4.addWidget(edit)
+        groupbox4.setLayout(vbox4)
 
-    def submit(self):
-        keep = self.line_edit1.text()
-        remove = self.line_edit2.text()
-        print(f'To-keep: {keep}, To-remove: {remove}')
+        # Add the group boxes to the grid layout
+        grid.addWidget(groupbox1, 0, 0)
+        grid.addWidget(groupbox2, 0, 1)
+        grid.addWidget(groupbox3, 1, 0)
+        grid.addWidget(groupbox4, 1, 1)
+
+        self.setLayout(grid)
+        self.setWindowTitle('cLDLA params')
+        self.resize(750, 600)
+        self.show()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    window = MyWindow()
-    window.setGeometry(100, 100, 400, 200)
-    window.setWindowTitle('cLDLA')
-    window.show()
+    window = MyWidget()
     sys.exit(app.exec_())
