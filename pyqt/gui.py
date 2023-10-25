@@ -1,5 +1,6 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLabel, QLineEdit
+import json
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QPushButton
 
 class MyWidget(QWidget):
     def __init__(self):
@@ -55,10 +56,33 @@ class MyWidget(QWidget):
         grid.addWidget(groupbox3, 1, 0)
         grid.addWidget(groupbox4, 1, 1)
 
-        self.setLayout(grid)
+        # Submit Button
+        submit_button = QPushButton('Submit')
+        submit_button.clicked.connect(self.on_submit)
+
+        vbox = QVBoxLayout()
+        vbox.addLayout(grid)
+        vbox.addWidget(submit_button)
+
+        self.setLayout(vbox)
         self.setWindowTitle('cLDLA params')
-        self.resize(750, 600)
+        self.resize(760, 600)
         self.show()
+
+    def on_submit(self):
+        # Function to handle the "Submit" button click
+        # Create a dictionary of field name and field value
+        field_data = {}
+        for category in (groupbox1, groupbox2, groupbox3, groupbox4):
+            for widget in category.findChildren(QLineEdit):
+                field_name = widget.text()
+                field_value = widget.text()
+                field_data[field_name] = field_value
+
+        # Save the dictionary to a JSON file
+        with open('parameters.json', 'w') as json_file:
+            json.dump(field_data, json_file, indent=4)
+        print("Data saved to parameters.json")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
