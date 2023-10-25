@@ -21,8 +21,8 @@ def vcf_to_custom_haplo(vcf_path, window_size, window_number):
         os.makedirs(f'./{dataset}/{chromosome}')
 
     hap_path = f'{dataset}.{chromosome}.{window_number+1}.hap'
-    map_path = f'{window_number+1}.map'
-    par_path = f'.{window_number+1}.par'
+    map_path = f'{dataset}.{window_number+1}.map'
+    par_path = f'${dataset}.{window_number+1}.par'
     
     n_samples = util.get_HAP(hap_path, sample_genotypes)
     util.get_MAP(map_path, positions, hzgys)
