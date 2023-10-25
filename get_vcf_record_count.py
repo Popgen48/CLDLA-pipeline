@@ -3,29 +3,21 @@ import sys
 import os
 
 vcf_file_path = sys.argv[1]
+chrom = sys.argv[2]
+window_size = int(sys.argv[3])
 
 vcf_file = pysam.VariantFile(vcf_file_path, 'r')
 
-record_count = sum(1 for _ in vcf_file)
+window_count = sum(1 for _ in vcf_file) - window_size + 1
 
 vcf_file.close()
 
-output_file_path = 'record_counts.txt'
+output_file_path = chrom+'_window_counts.txt'
 
 # check if file already exists
 if not os.path.exists(output_file_path):
     with open(output_file_path, 'w') as output_file:
-        output_file.write(f"{vcf_file_path}: {record_count}\n")
-else:
-    # check if the record count already exists
-    with open(output_file_path, 'r') as output_file:
-        line = output_file.readline()
-        if line.split(':')[0].strip() == vcf_file_path:
-            print(f'Record count for {vcf_file_path} already exists')
-            exit(1)
+        for n_window in range(1,window_count+1):
+            output_file.write(f"{chrom} {n_window}\n")
 
-    # add count if it does not exist
-    with open(output_file_path, 'a') as output_file:
-        output_file.write(f'{vcf_file_path}: {record_count}\n')
-
-print(f'Record count saved to {output_file_path}')
+print(f'window count saved to {output_file_path}')
