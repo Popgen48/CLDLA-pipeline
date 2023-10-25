@@ -8,7 +8,6 @@ class MyMainWindow(QMainWindow):
         self.initUI()
 
     def initUI(self):
-        # Set the window title and size
         self.setWindowTitle('cLDLA Parameters')
         self.setGeometry(100, 100, 800, 600)  # Adjust the window size as needed
 
@@ -101,7 +100,6 @@ class MyWidget(QWidget):
         self.file_path_field = QLineEdit()
         self.file_path_field.setPlaceholderText('Enter .yml file path')
 
-        # Create a layout for the Load button and field to go side-by-side
         load_layout = QHBoxLayout()
         load_layout.addWidget(load_button)
         load_layout.addWidget(self.file_path_field)
@@ -142,7 +140,6 @@ class MyWidget(QWidget):
 
     def on_submit(self):
         # Function to handle the "Submit" button click
-        # Create a dictionary of field name and field value
         field_data = {}
         for category in (self.category1_fields, self.category2_fields, self.category3_fields, self.category4_fields):
             for widget in category:
