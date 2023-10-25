@@ -15,7 +15,7 @@ def vcf_to_custom_haplo(arg_list):
     
     if len(positions) != len(hzgys):
         print('Number of records mismatch')
-        return exit(1) 
+        exit(1) 
     
     if not os.path.exists(f'./{dataset}/{chromosome}'):
         os.makedirs(f'./{dataset}/{chromosome}')
