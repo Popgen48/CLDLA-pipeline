@@ -3,5 +3,9 @@ channels:
   - conda-forge
   - bioconda
   - defaults
+  - anaconda
 dependencies:
   - bioconda::pysam=0.20.0
+  - pyyaml=6.0.1
+  - pip:
+      - pyqt5-sip==12.11.0
