@@ -1,3 +1,5 @@
+# python3 ginverse.py <input_file> <output_file>
+
 from scipy import linalg
 import numpy
 import sys
@@ -23,7 +25,8 @@ with open(sys.argv[1], 'r') as input_file:
 for i in range(matrix.shape[0]):
     for j in range(i+1, matrix.shape[1]):
         matrix[i][j] = matrix[j][i]
-        
+
+# Calculate the g-inverse       
 inverse = linalg.pinv(matrix)
 
 with open(sys.argv[2], 'w') as output_file:
