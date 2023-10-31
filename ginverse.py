@@ -6,9 +6,9 @@ matrix = numpy.empty((0, 0))
 
 with open(sys.argv[1], 'r') as input_file:
     for line in input_file:
-        row, col, value = map(float, line.split())  # Parse row, col, and value
-        row -= 1
-        col -= 1
+        row = float(line.split()[0]) - 1
+        col = float(line.split()[1]) - 1
+        value = float(line.split()[2])
         max_row = int(row) + 1
         max_col = int(col) + 1
         
