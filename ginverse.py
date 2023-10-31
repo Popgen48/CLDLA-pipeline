@@ -24,7 +24,7 @@ for i in range(matrix.shape[0]):
     for j in range(i+1, matrix.shape[1]):
         matrix[i][j] = matrix[j][i]
         
-inverse = linalg.inv(matrix)
+inverse = linalg.pinv(matrix)
 
 with open(sys.argv[2], 'w') as output_file:
     for i in range(inverse.shape[0]):
