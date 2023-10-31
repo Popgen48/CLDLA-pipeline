@@ -35,10 +35,10 @@ class MyWidget(QWidget):
         grid = QGridLayout()
 
         # Category 1
-        groupbox1 = QGroupBox('Category 1')
+        groupbox1 = QGroupBox('General Parameters')
         vbox1 = QVBoxLayout()
         self.category1_fields = []  # Store references to widget labels and values)
-        for i in ['C1 F1', 'C1 F2', 'C1 F3', 'C1 F4', 'C1 F5']:
+        for i in ['Input file', 'Output directory', 'SNP window size', 'Output prefix', 'No. of threads']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox1.addWidget(label)
@@ -47,10 +47,10 @@ class MyWidget(QWidget):
         groupbox1.setLayout(vbox1)
 
         # Category 2
-        groupbox2 = QGroupBox('Category 2')
+        groupbox2 = QGroupBox('Filtering')
         vbox2 = QVBoxLayout()
         self.category2_fields = []
-        for i in ['C2 F1', 'C2 F2', 'C2 F3', 'C2 F4', 'C2 F5']:
+        for i in ['Minor Allele Frequency (0 to 1)', 'Samples to keep', 'Samples to remove']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox2.addWidget(label)
@@ -59,10 +59,10 @@ class MyWidget(QWidget):
         groupbox2.setLayout(vbox2)
 
         # Category 3
-        groupbox3 = QGroupBox('Category 3')
+        groupbox3 = QGroupBox('Echidna Parameters')
         vbox3 = QVBoxLayout()
         self.category3_fields = []
-        for i in ['C3 F1', 'C3 F2', 'C3 F3', 'C3 F4', 'C3 F5']:
+        for i in ['Phenotype file', 'Parameter file']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox3.addWidget(label)
@@ -71,10 +71,10 @@ class MyWidget(QWidget):
         groupbox3.setLayout(vbox3)
 
         # Category 4
-        groupbox4 = QGroupBox('Category 4')
+        groupbox4 = QGroupBox('Phasing')
         vbox4 = QVBoxLayout()
         self.category4_fields = []  
-        for i in ['C4 F1', 'C4 F2', 'C4 F3', 'C4 F4', 'C4 F5']:
+        for i in ['Beagle Phasing (y/n)', 'Beagle Parameters (if yes)']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox4.addWidget(label)
@@ -89,7 +89,7 @@ class MyWidget(QWidget):
         grid.addWidget(groupbox4, 1, 1)
 
         # Submit Button
-        submit_button = QPushButton('Submit')
+        submit_button = QPushButton('Save')
         submit_button.clicked.connect(self.on_submit)
 
         # Load Button
