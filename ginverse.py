@@ -14,6 +14,7 @@ with open(sys.argv[1], 'r') as input_file:
         max_row = int(row) + 1
         max_col = int(col) + 1
         
+        # dynamically resize the matrix
         if max_row > matrix.shape[0]:
             matrix = numpy.pad(matrix, ((0, max_row - matrix.shape[0]), (0, 0)), mode='constant')
         if max_col > matrix.shape[1]:
@@ -21,12 +22,12 @@ with open(sys.argv[1], 'r') as input_file:
         
         matrix[int(row), int(col)] = value   
 
-# Matrix is symmetrical
+# matrix is symmetrical
 for i in range(matrix.shape[0]):
     for j in range(i+1, matrix.shape[1]):
         matrix[i][j] = matrix[j][i]
 
-# Calculate the g-inverse       
+# calculate the g-inverse (https://docs.scipy.org/doc/scipy/reference/generated/scipy.linalg.pinv.html)      
 inverse = linalg.pinv(matrix)
 
 with open(sys.argv[2], 'w') as output_file:
