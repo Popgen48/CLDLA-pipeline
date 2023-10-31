@@ -1,6 +1,7 @@
 import pysam
 import sys
 import os
+import util
 
 vcf_file_path = sys.argv[1]
 chrom = sys.argv[2]
@@ -8,9 +9,15 @@ window_size = int(sys.argv[3])
 
 vcf_file = pysam.VariantFile(vcf_file_path, 'r')
 
-window_count = sum(1 for _ in vcf_file) - window_size + 1
+count = 0
+for record in vcf_file:
+    maf = util.get_maf(record)
+    if maf[0] != 0 and maf[1] != 0:
+        count += 1
 
 vcf_file.close()
+
+window_count = count - window_size + 1
 
 output_file_path = chrom+'_window_counts.txt'
 
