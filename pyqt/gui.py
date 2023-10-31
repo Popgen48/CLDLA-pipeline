@@ -37,50 +37,52 @@ class MyWidget(QWidget):
         # Category 1
         groupbox1 = QGroupBox('General Parameters')
         vbox1 = QVBoxLayout()
-        self.category1_fields = []  # Store references to widget labels and values)
+        self.category1_fields = {}  # Store references to widget labels and values)
         for i in ['Input file', 'Output directory', 'SNP window size', 'Output prefix', 'No. of threads']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox1.addWidget(label)
             vbox1.addWidget(edit)
-            self.category1_fields.append((label.text(), edit))
+            self.category1_fields[label.text()] = edit
         groupbox1.setLayout(vbox1)
 
         # Category 2
         groupbox2 = QGroupBox('Filtering')
         vbox2 = QVBoxLayout()
-        self.category2_fields = []
+        self.category2_fields = {}
         for i in ['Minor Allele Frequency (0 to 1)', 'Samples to keep', 'Samples to remove']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox2.addWidget(label)
             vbox2.addWidget(edit)
-            self.category2_fields.append((label.text(), edit))
+            self.category2_fields[label.text()] = edit
         groupbox2.setLayout(vbox2)
 
         # Category 3
         groupbox3 = QGroupBox('Echidna Parameters')
         vbox3 = QVBoxLayout()
-        self.category3_fields = []
+        self.category3_fields = {}
         for i in ['Phenotype file', 'Parameter file']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox3.addWidget(label)
             vbox3.addWidget(edit)
-            self.category3_fields.append((label.text(), edit))
+            self.category3_fields[label.text()] = edit
         groupbox3.setLayout(vbox3)
 
         # Category 4
         groupbox4 = QGroupBox('Phasing')
         vbox4 = QVBoxLayout()
-        self.category4_fields = []  
-        for i in ['Beagle Phasing (y/n)', 'Beagle Parameters (if yes)']:
+        self.category4_fields = {}  
+        for i in ['Beagle Phasing (yes/no)', 'Beagle Parameters (if yes)']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox4.addWidget(label)
             vbox4.addWidget(edit)
-            self.category4_fields.append((label.text(),edit))
+            self.category4_fields[label.text()] = edit
         groupbox4.setLayout(vbox4)
+        
+        self.params = {**self.category1_fields, **self.category2_fields, **self.category3_fields, **self.category4_fields}
         
         # Add the group boxes to the grid layout
         grid.addWidget(groupbox1, 0, 0)
@@ -128,26 +130,20 @@ class MyWidget(QWidget):
 
     def populate_fields(self, data):
         # Function to populate the fields with loaded data
-        for idx, field_value in enumerate(data.values()):
-            if idx < len(self.category1_fields):
-                self.category1_fields[idx].setText(str(field_value))
-            elif idx < 2 * len(self.category1_fields):
-                self.category2_fields[idx - len(self.category1_fields)].setText(str(field_value))
-            elif idx < 3 * len(self.category1_fields):
-                self.category3_fields[idx - 2 * len(self.category1_fields)].setText(str(field_value))
-            else:
-                self.category4_fields[idx - 3 * len(self.category1_fields)].setText(str(field_value))
+        for idx, field_value in data.items():
+            self.params[idx].setText(field_value)
 
     def on_submit(self):
         # Function to handle the "Submit" button click
         field_data = {}
-        for label, value in self.category1_fields + self.category2_fields + self.category3_fields + self.category4_fields:
+        for label, value in self.params.items():
             field_data[label] = value.text()
 
         # Save the dictionary to a YAML file
-        with open('parameters.yml', 'w') as yaml_file:
+        output_file = f'{field_data["Output prefix"]}_parameters.yml'
+        with open(output_file, 'w') as yaml_file:
             yaml.dump(field_data, yaml_file, default_flow_style=False)
-        print("Data saved to parameters.yml")
+        print(f"Data saved to {output_file}")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
