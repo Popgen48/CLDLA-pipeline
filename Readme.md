@@ -4,7 +4,7 @@ Run `python3 parallelize.py {vcf_file_path} {window_size} {n_processes}`
 
 Output is saved under `./{dataset}/{chromosome}`
 
-## For Bending using Rscipt
+## For Bending using Rscript
 
 Run `Rscript bend.R {input_file} {output_file} {method ([lrs]/hj)}`
 
