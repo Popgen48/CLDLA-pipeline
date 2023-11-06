@@ -4,7 +4,7 @@
 
 Usage: `python3 vcf_to_hapmap.py <vcf_file> <window_size> <window_number>`
 
-Stores the output under `<dataset>/<chromosome>/` as `<dataset><chromosome><window_number>.hap/.map/.par`
+Stores the output under `<dataset>/<chromosome>/` as `<dataset>.<chromosome>.<window_number>.hap/.map/.par`
 
 ---
 
