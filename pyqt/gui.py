@@ -1,0 +1,152 @@
+import sys
+import yaml
+from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog, QHBoxLayout, QMainWindow, QAction, QMessageBox
+
+class MyMainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('cLDLA Parameters')
+        self.setGeometry(100, 100, 800, 600)  # Adjust the window size as needed
+
+        # Add a Help button to the title bar
+        help_action = QAction('Help', self)
+        help_action.setStatusTip('Show a basic help message')
+        help_action.triggered.connect(self.show_help_message)
+        self.menuBar().addAction(help_action)
+
+        # Create the central widget and set it
+        central_widget = MyWidget()
+        self.setCentralWidget(central_widget)
+
+    def show_help_message(self):
+        # Function to display a basic help message
+        help_message = "More information available at ..."
+        QMessageBox.information(self, 'Help', help_message)
+
+class MyWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        grid = QGridLayout()
+
+        # Category 1
+        groupbox1 = QGroupBox('General Parameters')
+        vbox1 = QVBoxLayout()
+        self.category1_fields = {}  # Store references to widget labels and values)
+        for i in ['Input file', 'Output directory', 'SNP window size', 'Output prefix', 'No. of threads']:
+            label = QLabel(i)
+            edit = QLineEdit()
+            vbox1.addWidget(label)
+            vbox1.addWidget(edit)
+            self.category1_fields[label.text()] = edit
+        groupbox1.setLayout(vbox1)
+
+        # Category 2
+        groupbox2 = QGroupBox('Filtering')
+        vbox2 = QVBoxLayout()
+        self.category2_fields = {}
+        for i in ['Minor Allele Frequency (0 to 1)', 'Samples to keep', 'Samples to remove']:
+            label = QLabel(i)
+            edit = QLineEdit()
+            vbox2.addWidget(label)
+            vbox2.addWidget(edit)
+            self.category2_fields[label.text()] = edit
+        groupbox2.setLayout(vbox2)
+
+        # Category 3
+        groupbox3 = QGroupBox('Echidna Parameters')
+        vbox3 = QVBoxLayout()
+        self.category3_fields = {}
+        for i in ['Phenotype file', 'Parameter file']:
+            label = QLabel(i)
+            edit = QLineEdit()
+            vbox3.addWidget(label)
+            vbox3.addWidget(edit)
+            self.category3_fields[label.text()] = edit
+        groupbox3.setLayout(vbox3)
+
+        # Category 4
+        groupbox4 = QGroupBox('Phasing')
+        vbox4 = QVBoxLayout()
+        self.category4_fields = {}  
+        for i in ['Beagle Phasing (yes/no)', 'Beagle Parameters (if yes)']:
+            label = QLabel(i)
+            edit = QLineEdit()
+            vbox4.addWidget(label)
+            vbox4.addWidget(edit)
+            self.category4_fields[label.text()] = edit
+        groupbox4.setLayout(vbox4)
+        
+        self.params = {**self.category1_fields, **self.category2_fields, **self.category3_fields, **self.category4_fields}
+        
+        # Add the group boxes to the grid layout
+        grid.addWidget(groupbox1, 0, 0)
+        grid.addWidget(groupbox2, 0, 1)
+        grid.addWidget(groupbox3, 1, 0)
+        grid.addWidget(groupbox4, 1, 1)
+
+        # Submit Button
+        submit_button = QPushButton('Save')
+        submit_button.clicked.connect(self.on_submit)
+
+        # Load Button
+        load_button = QPushButton('Load')
+        load_button.clicked.connect(self.load_data)
+
+        # File Dialog Field
+        self.file_path_field = QLineEdit()
+        self.file_path_field.setPlaceholderText('Enter .yml file path')
+
+        load_layout = QHBoxLayout()
+        load_layout.addWidget(load_button)
+        load_layout.addWidget(self.file_path_field)
+
+        vbox = QVBoxLayout()
+        vbox.addLayout(grid)
+        vbox.addLayout(load_layout)
+        vbox.addWidget(submit_button)
+
+        self.setLayout(vbox)
+        self.setWindowTitle('cLDLA params')
+        self.resize(800, 600)
+
+    def load_data(self):
+        # Function to handle the "Load" button click
+        file_path = self.file_path_field.text()
+        if file_path.endswith('.yml'):
+            try:
+                with open(file_path, 'r') as yaml_file:
+                    data = yaml.load(yaml_file, Loader=yaml.FullLoader)
+                    self.populate_fields(data)
+            except FileNotFoundError:
+                print(f"File not found: {file_path}")
+        else:
+            print("Please provide a valid .yml file path.")
+
+    def populate_fields(self, data):
+        # Function to populate the fields with loaded data
+        for idx, field_value in data.items():
+            self.params[idx].setText(field_value)
+
+    def on_submit(self):
+        # Function to handle the "Submit" button click
+        field_data = {}
+        for label, value in self.params.items():
+            field_data[label] = value.text()
+
+        # Save the dictionary to a YAML file
+        output_file = f'{field_data["Output prefix"]}_parameters.yml'
+        with open(output_file, 'w') as yaml_file:
+            yaml.dump(field_data, yaml_file, default_flow_style=False)
+        print(f"Data saved to {output_file}")
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    window = MyMainWindow()
+    window.show()
+    sys.exit(app.exec_())
