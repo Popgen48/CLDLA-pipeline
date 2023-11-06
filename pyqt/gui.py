@@ -38,7 +38,7 @@ class MyWidget(QWidget):
         groupbox1 = QGroupBox('General Parameters')
         vbox1 = QVBoxLayout()
         self.category1_fields = {}  # Store references to widget labels and values)
-        for i in ['Input file', 'Output directory', 'SNP window size', 'Output prefix', 'No. of threads']:
+        for i in ['Input file', 'Output directory', 'SNP window size', 'Output prefix', 'Email']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox1.addWidget(label)
@@ -50,7 +50,7 @@ class MyWidget(QWidget):
         groupbox2 = QGroupBox('Filtering')
         vbox2 = QVBoxLayout()
         self.category2_fields = {}
-        for i in ['Minor Allele Frequency (0 to 1)', 'Samples to keep', 'Samples to remove']:
+        for i in ['Minor Allele Frequency (0 to 1)', 'Samples file', 'Minimun depth', 'Maximum depth', 'SNP Ids to exclude']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox2.addWidget(label)
@@ -62,7 +62,7 @@ class MyWidget(QWidget):
         groupbox3 = QGroupBox('Echidna Parameters')
         vbox3 = QVBoxLayout()
         self.category3_fields = {}
-        for i in ['Phenotype file', 'Parameter file']:
+        for i in ['Parameter file', 'Phenotype file', 'Phenotype Columns', 'Permutation Test', '# random phenotypes', '# random windows', 'p-value', 'Chromosomes to include']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox3.addWidget(label)
@@ -74,7 +74,7 @@ class MyWidget(QWidget):
         groupbox4 = QGroupBox('Phasing')
         vbox4 = QVBoxLayout()
         self.category4_fields = {}  
-        for i in ['Beagle Phasing (yes/no)', 'Beagle Parameters (if yes)']:
+        for i in ['Beagle Phasing (yes/no)', 'Beagle Parameters (if yes)', 'FastPHASE Phasing (yes/no)', 'FastPHASE Parameters (if yes)']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox4.addWidget(label)
