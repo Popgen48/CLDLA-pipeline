@@ -3,3 +3,4 @@ AutoSom21b.Chr_28.TxT.vcf
 *.json
 __pycache__
 AutoSom21b/
+hapmap_testing
