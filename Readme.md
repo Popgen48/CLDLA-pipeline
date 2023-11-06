@@ -14,7 +14,7 @@ Usage: `python3 get_vcf_record_count.py <vcf_file> <chromosome> <window_size>`
 
 ---
 
-3. `Bend5` and `bend.R`: Scripts used for bending the relation matrix (.grm) for making it invertible at a later stage. `Bend5` is an old fortran exceutable and `bend.R` is an R script based on the 'mbend'[https://cran.r-project.org/web/packages/mbend/index.html] R package.
+3. `Bend5` and `bend.R`: Scripts used for bending the relation matrix (.grm) for making it invertible at a later stage. `Bend5` is an old fortran exceutable and `bend.R` is an R script based on the '[mbend](https://cran.r-project.org/web/packages/mbend/index.html)' R package.
 
 Produces a '.B.grm' output file
 
