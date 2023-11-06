@@ -133,8 +133,26 @@ class MyWidget(QWidget):
         for idx, field_value in data.items():
             self.params[idx].setText(field_value)
 
+    def validate(self):
+        # Function to validate the input fields
+        if not int(self.params['SNP window size'].text()) > 0:
+            print("SNP window size must be greater than 0.")
+            return False
+        if 0 >= float(self.params['Minor Allele Frequency (0 to 1)'].text()) and float(self.params['Minor Allele Frequency (0 to 1)'].text()) >= 1:
+            print("Minor Allele Frequency must be between 0 and 1.")
+            return False
+        if not int(self.params['Minimum Depth'].text()) > 0:
+            print("Minimum depth must be greater than 0.")
+            return False
+        if not int(self.params['Maximum Depth'].text()) > 0 and int(self.params['Maximum Depth'].text()) > int(self.params['Minimum Depth'].text()):
+            print("Maximum depth must be greater than 0 and the minimum depth.")
+            return False
+    
     def on_submit(self):
         # Function to handle the "Submit" button click
+        if not self.validate():
+            return
+        
         field_data = {}
         for label, value in self.params.items():
             field_data[label] = value.text()
