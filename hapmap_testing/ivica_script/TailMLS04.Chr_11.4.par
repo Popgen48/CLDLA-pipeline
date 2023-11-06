@@ -1,0 +1,5 @@
+100 		T		= Number of Generationt til to base genetation 
+100 		Ne		= Efective population size 
+41 		nPos 	= actual  No of positions in haplo (No of Markers + QTL)
+4		PosA	= Position of QTL (PosA=10=QTL after marker 9)
+362		nAnimals= No of Animals in actual analyse
