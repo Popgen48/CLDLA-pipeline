@@ -2,6 +2,13 @@ import sys
 import yaml
 from PyQt5.QtWidgets import QApplication, QWidget, QGridLayout, QGroupBox, QVBoxLayout, QLabel, QLineEdit, QPushButton, QFileDialog, QHBoxLayout, QMainWindow, QAction, QMessageBox
 
+def is_float(input_str):
+    try:
+        float(input_str)
+        return True
+    except ValueError:
+        return False
+
 class MyMainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -50,7 +57,7 @@ class MyWidget(QWidget):
         groupbox2 = QGroupBox('Filtering')
         vbox2 = QVBoxLayout()
         self.category2_fields = {}
-        for i in ['Minor Allele Frequency (0 to 1)', 'Samples file', 'Minimun depth', 'Maximum depth', 'SNP Ids to exclude']:
+        for i in ['Minor Allele Frequency (0 to 1)', 'Samples file', 'Minimum depth', 'Maximum depth', 'SNP Ids to exclude']:
             label = QLabel(i)
             edit = QLineEdit()
             vbox2.addWidget(label)
@@ -135,17 +142,38 @@ class MyWidget(QWidget):
 
     def validate(self):
         # Function to validate the input fields
+        if not self.params['SNP window size'].text().isdigit():
+            QMessageBox.critical(self, "Error", "SNP window size must be an integer.")
+            return False
         if not int(self.params['SNP window size'].text()) > 0:
-            print("SNP window size must be greater than 0.")
+            QMessageBox.critical(self, "Error", "SNP window size must be greater than 0.")
             return False
-        if 0 >= float(self.params['Minor Allele Frequency (0 to 1)'].text()) and float(self.params['Minor Allele Frequency (0 to 1)'].text()) >= 1:
-            print("Minor Allele Frequency must be between 0 and 1.")
+        if not is_float(self.params['Minor Allele Frequency (0 to 1)'].text()):
+            QMessageBox.critical(self, "Error", "Minor Allele Frequency must be a float.")
             return False
-        if not int(self.params['Minimum Depth'].text()) > 0:
-            print("Minimum depth must be greater than 0.")
+        if 0 >= float(self.params['Minor Allele Frequency (0 to 1)'].text()) or float(self.params['Minor Allele Frequency (0 to 1)'].text()) >= 1:
+            QMessageBox.critical(self, "Error", "Minor Allele Frequency must be between 0 and 1.")
             return False
-        if not int(self.params['Maximum Depth'].text()) > 0 and int(self.params['Maximum Depth'].text()) > int(self.params['Minimum Depth'].text()):
-            print("Maximum depth must be greater than 0 and the minimum depth.")
+        if not self.params['Minimum depth'].text().isdigit():
+            QMessageBox.critical(self, "Error", "Minimum depth must be an integer.")
+            return False
+        if not int(self.params['Minimum depth'].text()) > 0:
+            QMessageBox.critical(self, "Error", "Minimum depth must be greater than 0.")
+            return False
+        if not self.params['Maximum depth'].text().isdigit():
+            QMessageBox.critical(self, "Error", "Maximum depth must be an integer.")
+            return False
+        if (not int(self.params['Maximum depth'].text()) > 0) or (int(self.params['Maximum depth'].text()) < int(self.params['Minimum depth'].text())):
+            QMessageBox.critical(self, "Error", "Maximum depth must be greater than 0 and the minimum depth.")
+            return False
+        if not self.params['# random phenotypes'].text().isdigit():
+            QMessageBox.critical(self, "Error", "# random phenotypes must be an integer.")
+            return False
+        if not self.params['# random windows'].text().isdigit():
+            QMessageBox.critical(self, "Error", "# random windows must be an integer.")
+            return False
+        if not is_float(self.params['p-value'].text()):
+            QMessageBox.critical(self, "Error", "p-value must be a floating point.")
             return False
     
     def on_submit(self):
