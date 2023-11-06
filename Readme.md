@@ -4,6 +4,8 @@
 
 Usage: `python3 vcf_to_hapmap.py <vcf_file> <window_size> <window_number>`
 
+Stores the output under `<dataset>/<chromosome>/` as `<dataset><chromosome><window_number>.hap/.map/.par`
+
 ---
 
 2. `get_vcf_record_count.py`: Get the number of _valid_ records in a .vcf file. (based on minor allele frequency). Output is saved under `<chromosome>_window_counts.txt`
