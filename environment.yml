@@ -9,5 +9,6 @@ dependencies:
   - pyyaml=6.0.1
   - numpy=1.26.0
   - scipy=1.11.3
+  - r-base=4.2.2
   - pip:
       - pyqt5-sip==12.11.0
