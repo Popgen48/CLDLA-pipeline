@@ -1,1 +1,0 @@
-AutoSom21b.Chr_28.TxT.vcf.gz: 889
