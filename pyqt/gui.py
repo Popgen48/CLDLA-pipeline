@@ -299,8 +299,39 @@ class MyWidget(QWidget):
             self.params["phase_params"] = QLineEdit('None')
             return True
         
-            
-            
+        # Check permutation test
+        if self.params["perm_test"].text() not in ["True", "False", "true", "false"]:
+            QMessageBox.critical(self, "Error", "Permutation test must be True or False.")
+            return False
+        else:
+            if self.params["perm_test"].text() in ["True", "true"]:
+                self.params["perm_test"] = True
+                # check inputs
+                if not self.params["num_phenos"].text().isdigit():
+                    QMessageBox.critical(
+                        self, "Error", "# random phenotypes must be an integer."
+                    )
+                    return False
+                if not self.params["num_windows"].text().isdigit():
+                    QMessageBox.critical(self, "Error", "# random windows must be an integer.")
+                    return False
+                if not is_float(self.params["p_value"].text()):
+                    QMessageBox.critical(self, "Error", "p-value must be a floating point.")
+                    return False
+                # check perm file paths
+                if not os.path.exists(self.params["chromosomes"].text()):
+                    if self.params["chromosomes"].text() == "all":
+                        return True
+                    else:
+                        QMessageBox.critical(self, "Error", f"Chromosomes to consider are invalid. Either enter 'all' or a valid file path.")
+                        return False
+            else:
+                self.params["perm_test"] = False
+                self.params["num_phenos"] = QLineEdit('None')
+                self.params["num_windows"] = QLineEdit('None')
+                self.params["p_value"] = QLineEdit('None')
+                self.params["chromosomes"] = QLineEdit('None')
+                return True
 
     def on_submit(self):
         # Function to handle the "Submit" button click
