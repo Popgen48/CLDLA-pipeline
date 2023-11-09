@@ -1,4 +1,4 @@
-// A simple C++ program to perform bending (if negative eigenvalues encountered) to make the matrix positive using Schaeffer's method (https://animalbiosciences.uoguelph.ca/~lrs/ELARES/PDforce.pdf)
+// A simple C++ program to get the generalized-inverse of a coorelation matrix. It first performs bending (if negative eigenvalues are encountered) to make the matrix positive using Schaeffer's method (https://animalbiosciences.uoguelph.ca/~lrs/ELARES/PDforce.pdf)
 
 // Requires the Eigen library (https://eigen.tuxfamily.org/dox/GettingStarted.html)
 
@@ -32,9 +32,32 @@ void writeMatrixToFile(const Eigen::MatrixXd &matrix, const std::string &filenam
     outfile.close();
 }
 
+void calculateGInverse(const Eigen::MatrixXd &matrix, const std::string &filename)
+{
+    std::ofstream outfile(filename);
+    if (!outfile)
+    {
+        std::cerr << "Failed to open the output file." << std::endl;
+        return;
+    }
+    std::cout << "Calculating generalized inverse..." << std::endl;
+
+    // Calculate the generalized inverse of B
+    Eigen::MatrixXd B_gen_inverse = matrix.completeOrthogonalDecomposition().pseudoInverse();
+
+    // Print the generalized inverse
+    // std::cout << "Generalized Inverse (Pseudo-Inverse) of B:" << std::endl;
+    // std::cout << B_gen_inverse << std::endl;
+
+    // Save the generalized inverse to a text file
+    writeMatrixToFile(B_gen_inverse, filename);
+
+    std::cout << "Generalized inverse saved to '" << filename << "'." << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
-    if (argc != 3)
+    if (argc != 4)
     {
         std::cerr << "Usage: " << argv[0] << " <input_file> <output_file>" << std::endl;
         return 1;
@@ -55,6 +78,9 @@ int main(int argc, char *argv[])
 
     // Create a dynamic matrix to hold the data
     Eigen::MatrixXd A(num_rows, num_rows);
+
+    // Create a dynamic matrix to hold the modified data
+    // Eigen::MatrixXd B(num_rows, num_rows);
 
     int row, col;
     double value;
@@ -118,6 +144,9 @@ int main(int argc, char *argv[])
         writeMatrixToFile(B, argv[2]);
 
         std::cout << "Matrix bending finished. Output saved to '" << argv[2] << "'" << std::endl;
+
+        // Calculate the generalized inverse of B
+        calculateGInverse(B, argv[3]);
     }
     else
     {
@@ -133,6 +162,9 @@ int main(int argc, char *argv[])
         outfile.close();
 
         std::cout << "Output saved to '" << argv[2] << "'" << std::endl;
+
+        // Calculate the generalized inverse of A
+        calculateGInverse(A, argv[3]);
     }
 
     return 0;
