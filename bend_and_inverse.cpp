@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 {
     if (argc != 4)
     {
-        std::cerr << "Usage: " << argv[0] << " <input_file> <output_file>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <input_file> <bending_output_file> <ginverse_output_file>" << std::endl;
         return 1;
     }
 
