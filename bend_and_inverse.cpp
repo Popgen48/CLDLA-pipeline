@@ -22,7 +22,7 @@ void writeMatrixToFile(const Eigen::MatrixXd &matrix, const std::string &filenam
     // Write the matrix values to the file in the specified format
     for (int i = 0; i < matrix.rows(); ++i)
     {
-        for (int j = 0; j < matrix.cols(); ++j)
+        for (int j = 0; j < i + 1; ++j)
         {
             outfile << i + 1 << " " << j + 1 << " " << matrix(i, j) << std::endl;
         }
