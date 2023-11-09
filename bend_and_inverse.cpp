@@ -57,9 +57,9 @@ void calculateGInverse(const Eigen::MatrixXd &matrix, const std::string &filenam
 
 int main(int argc, char *argv[])
 {
-    if (argc != 4)
+    if (argc != 3)
     {
-        std::cerr << "Usage: " << argv[0] << " <input_file> <bending_output_file> <ginverse_output_file>" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " <input_file> <ginverse_output_file>" << std::endl;
         return 1;
     }
 
@@ -141,17 +141,18 @@ int main(int argc, char *argv[])
         // std::cout << B << std::endl;
 
         // Save the new matrix B to a text file
-        writeMatrixToFile(B, argv[2]);
+        // writeMatrixToFile(B, argv[2]);
 
-        std::cout << "Matrix bending finished. Output saved to '" << argv[2] << "'" << std::endl;
+        // std::cout << "Matrix bending finished. Output saved to '" << argv[2] << "'" << std::endl;
 
         // Calculate the generalized inverse of B
-        calculateGInverse(B, argv[3]);
+        calculateGInverse(B, argv[2]);
     }
     else
     {
         std::cout << "No negative eigenvalues found. Matrix can be used as it is for inversion." << std::endl;
 
+        /*
         std::ifstream infile(argv[1]);
         std::string firstLine;
         std::getline(infile, firstLine); // Read and discard the first line
@@ -162,9 +163,10 @@ int main(int argc, char *argv[])
         outfile.close();
 
         std::cout << "Output saved to '" << argv[2] << "'" << std::endl;
+        */
 
         // Calculate the generalized inverse of A
-        calculateGInverse(A, argv[3]);
+        calculateGInverse(A, argv[2]);
     }
 
     return 0;
