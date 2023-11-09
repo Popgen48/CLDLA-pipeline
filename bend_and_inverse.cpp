@@ -98,9 +98,6 @@ int main(int argc, char *argv[])
     // Create a dynamic matrix to hold the data
     Eigen::MatrixXd A(num_rows, num_rows);
 
-    // Create a dynamic matrix to hold the modified data
-    // Eigen::MatrixXd B(num_rows, num_rows);
-
     int row, col;
     double value;
 
@@ -108,10 +105,14 @@ int main(int argc, char *argv[])
     while (infile >> row >> col >> value)
     {
         A(row - 1, col - 1) = value;
+        A(col - 1, row - 1) = value;
     }
 
     // Close the input file
     infile.close();
+
+    // std::cout << "Matrix A:" << std::endl;
+    // std::cout << A << std::endl;
 
     // Perform eigenvalue decomposition
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver(A);
@@ -126,7 +127,7 @@ int main(int argc, char *argv[])
     Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
 
     // Sort the eigenvalues in descending order
-    eigenvalues = eigenvalues.reverse();
+    // eigenvalues = eigenvalues.reverse();
 
     // Print the eigenvalues
     // std::cout << "Eigenvalues:" << std::endl;
@@ -139,14 +140,21 @@ int main(int argc, char *argv[])
     {
         std::cout << "The matrix has negative eigenvalues. Proceeding to bending..." << std::endl;
 
+        // Use Eigen's array operations to filter eigenvalues >= 0
+        Eigen::VectorXd non_negative_eigenvalues = (eigenvalues.array() >= 0).select(eigenvalues, eigenvalues.maxCoeff());
+
+        // Find the minimum positive eigenvalue
+        double smallest_positive_eigenvalue = non_negative_eigenvalues.minCoeff();
+
         // Step 1: Calculate 's = (sum of all neg eigenvals) × 2'
-        double s = (eigenvalues.array() < 0).cast<double>().sum() * 2.0;
+        Eigen::VectorXd negative_eigenvalues = (eigenvalues.array() < 0).select(eigenvalues, 0);
+        double s = negative_eigenvalues.sum() * 2.0;
 
         // Step 2: Calculate 't = (s × s) × 100 + 1'
-        double t = (s - eigenvalues.minCoeff()) * (s - eigenvalues.minCoeff()) * 100.0 + 1.0;
+        double t = (s * s) * 100.0 + 1.0;
 
         // Step 3: Replace negative eigenvalues (n's) using 'n_new = p × (s − n) × (s − n)/t' where p is the smallest positive eigenvalue
-        eigenvalues = (eigenvalues.array() >= 0).select(eigenvalues, eigenvalues.minCoeff() * (s - eigenvalues.array()).square() / t);
+        eigenvalues = (eigenvalues.array() >= 0).select(eigenvalues, smallest_positive_eigenvalue * (s - eigenvalues.array()).square() / t);
 
         // Print the modified eigenvalues
         // std::cout << "Modified Eigenvalues:" << std::endl;
@@ -155,14 +163,16 @@ int main(int argc, char *argv[])
         // Create a new matrix using modified eigenvalues and original eigenvectors
         Eigen::MatrixXd B = eigensolver.eigenvectors() * eigenvalues.asDiagonal() * eigensolver.eigenvectors().transpose();
 
+        /*
         // Print the new matrix B
-        // std::cout << "Matrix B:" << std::endl;
-        // std::cout << B << std::endl;
+        std::cout << "Matrix B:" << std::endl;
+        std::cout << B << std::endl;
 
-        // Save the new matrix B to a text file
-        // writeMatrixToFile(B, argv[2]);
+        Save the new matrix B to a text file
+        writeMatrixToFile(B, argv[2]);
 
-        // std::cout << "Matrix bending finished. Output saved to '" << argv[2] << "'" << std::endl;
+        std::cout << "Matrix bending finished. Output saved to '" << argv[2] << "'" << std::endl;
+        */
 
         // Calculate the generalized inverse of B
         calculateGInverse(B, argv[2]);
