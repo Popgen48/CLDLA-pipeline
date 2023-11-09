@@ -55,6 +55,25 @@ void calculateGInverse(const Eigen::MatrixXd &matrix, const std::string &filenam
     std::cout << "Generalized inverse saved to '" << filename << "'." << std::endl;
 }
 
+void calculateNormalInverse(const Eigen::MatrixXd &matrix, const std::string &filename)
+{
+    std::ofstream outfile(filename);
+    if (!outfile)
+    {
+        std::cerr << "Failed to open the output file." << std::endl;
+        return;
+    }
+    std::cout << "Calculating normal inverse..." << std::endl;
+
+    // Calculate the normal matrix inverse
+    Eigen::MatrixXd A_inverse = matrix.inverse();
+
+    // Save the normal inverse to a text file
+    writeMatrixToFile(A_inverse, filename);
+
+    std::cout << "Normal inverse saved to '" << filename << "'." << std::endl;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc != 3)
@@ -147,6 +166,9 @@ int main(int argc, char *argv[])
 
         // Calculate the generalized inverse of B
         calculateGInverse(B, argv[2]);
+
+        // Calculate the normal inverse of B
+        // calculateNormalInverse(B, argv[2]);
     }
     else
     {
@@ -167,6 +189,9 @@ int main(int argc, char *argv[])
 
         // Calculate the generalized inverse of A
         calculateGInverse(A, argv[2]);
+
+        // Calculate the normal inverse of A
+        // calculateNormalInverse(A, argv[2]);
     }
 
     return 0;
