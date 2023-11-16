@@ -65,7 +65,7 @@ class MyWidget(QWidget):
         groupbox1 = QGroupBox("General Parameters")
         g1_params = ["input", "out_dir", "window_size", "output_prefix", "email"]
         vbox1 = QVBoxLayout()
-        self.category1_fields = {}  # Store references to widget labels and values)
+        self.category1_fields = {}  # Store references to widget labels and values
         for i, l in enumerate([
             "Input file",
             "Output directory",
@@ -130,9 +130,9 @@ class MyWidget(QWidget):
             "Beagle Phasing",
             "FastPHASE Phasing",
             "None",
-            "Phasing Parameters",
+            "Phasing Parameters file",
         ]):
-            if l != "Phasing Parameters":
+            if l != "Phasing Parameters file":
                 yes = QRadioButton(l)
                 group = QButtonGroup()
                 group.addButton(yes)
@@ -155,9 +155,9 @@ class MyWidget(QWidget):
 
         # Add the group boxes to the grid layout
         grid.addWidget(groupbox1, 0, 0)
-        grid.addWidget(groupbox2, 0, 1)
+        grid.addWidget(groupbox2, 1, 1)
         grid.addWidget(groupbox3, 1, 0)
-        grid.addWidget(groupbox4, 0, 2)
+        grid.addWidget(groupbox4, 0, 1)
 
         # Submit Button
         submit_button = QPushButton("Save")
@@ -339,7 +339,7 @@ class MyWidget(QWidget):
             return
         field_data = {}
         for label, value in self.params.items():
-            print(label, value)
+            #print(label, value)
             if label == "beagle_phasing" or label == "fastphase_phasing":
                 field_data[label] = value
             else:
