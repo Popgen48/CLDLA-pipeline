@@ -101,7 +101,7 @@ class MyWidget(QWidget):
 
         # Category 3
         groupbox3 = QGroupBox("cLDLA Parameters")
-        g3_params = ["run_asreml", "run_parallel", "nproc", "param_file", "pheno_file", "pheno_cols", "chromosomes"]
+        g3_params = ["run_asreml", "run_parallel", "nproc", "param_file", "pheno_file", "pheno_cols", "chromosomes", "lrt_threshhold"]
         vbox3 = QVBoxLayout()
         self.category3_fields = {}
         for i, l in enumerate([
@@ -112,6 +112,7 @@ class MyWidget(QWidget):
             "Phenotype file",
             "Phenotype Columns",
             "Chromosomes to include",
+            "LRT threshold",
         ]):
             label = QLabel(l)
             edit = QLineEdit()
@@ -122,7 +123,7 @@ class MyWidget(QWidget):
 
         # Category 4
         groupbox4 = QGroupBox("Permutation Test")
-        g4_params = ["perm_test", "num_phenos", "num_windows", "p_value", "lrt_threshhold"]
+        g4_params = ["perm_test", "num_phenos", "num_windows", "p_value"]
         vbox4 = QVBoxLayout()
         self.category4_fields = {}
         for i, l in enumerate([
@@ -130,7 +131,6 @@ class MyWidget(QWidget):
             "# random phenotypes",
             "# random windows",
             "p-value",
-            "LRT threshold",
         ]):
             label = QLabel(l)
             edit = QLineEdit()
@@ -148,9 +148,9 @@ class MyWidget(QWidget):
             "Beagle Phasing",
             "FastPHASE Phasing",
             "None",
-            "Phasing Parameters file",
+            "Phasing Parameters",
         ]):
-            if l != "Phasing Parameters file":
+            if l != "Phasing Parameters":
                 yes = QRadioButton(l)
                 group = QButtonGroup()
                 group.addButton(yes)
@@ -310,21 +310,16 @@ class MyWidget(QWidget):
                 if not os.path.exists(self.params["phase_params"].text()):
                     QMessageBox.critical(self, "Error", f"Phasing parameter file path is invalid.")
                     return False
-                return True
+
         elif self.params["fastphase_phasing"].isChecked():
             self.params["beagle_phasing"] = False
             self.params["fastphase_phasing"] = True
             self.params["no_phasing"] = False
-            # check pahasing parameter file path
-            if not os.path.exists(self.params["phase_params"].text()):
-                QMessageBox.critical(self, "Error", f"Phasing parameter file path is invalid.")
-                return False
-            return True
+            
         elif self.params["no_phasing"].isChecked():
             self.params["beagle_phasing"] = False
             self.params["fastphase_phasing"] = False
             self.params["phase_params"] = QLineEdit('None')
-            return True
         
         # Check ASReml
         if self.params["run_asreml"].text() not in ["True", "False", "true", "false"]:
@@ -335,6 +330,9 @@ class MyWidget(QWidget):
                 self.params["run_asreml"] = True
             else:
                 self.params["run_asreml"] = False
+        if not is_float(self.params["lrt_threshold"]):
+            QMessageBox.critical(self, "Error", "LRT threshold must be a float.")
+            return False
 
         # Check parallel
         if self.params["run_parallel"].text() not in ["True", "False", "true", "false"]:
