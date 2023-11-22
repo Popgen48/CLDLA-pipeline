@@ -35,7 +35,7 @@ class MyMainWindow(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("cLDLA Parameters")
-        self.setGeometry(100, 100, 800, 600)  # Adjust the window size as needed
+        self.setGeometry(100, 100, 900, 600)  # Adjust the window size as needed
 
         # Add a Help button to the title bar
         help_action = QAction("Help", self)
@@ -100,18 +100,17 @@ class MyWidget(QWidget):
         groupbox2.setLayout(vbox2)
 
         # Category 3
-        groupbox3 = QGroupBox("Echidna Parameters")
-        g3_params = ["param_file", "pheno_file", "pheno_cols", "perm_test", "num_phenos", "num_windows", "p_value", "chromosomes"]
+        groupbox3 = QGroupBox("cLDLA Parameters")
+        g3_params = ["run_asreml", "run_parallel", "nproc", "param_file", "pheno_file", "pheno_cols", "chromosomes"]
         vbox3 = QVBoxLayout()
         self.category3_fields = {}
         for i, l in enumerate([
+            "Run ASReml (True/[False], Default is Echidna)",
+            "Run in parallel (True/[False])",
+            "# processes to run in parallel",
             "Parameter file",
             "Phenotype file",
             "Phenotype Columns",
-            "Permutation Test (True/False)",
-            "# random phenotypes",
-            "# random windows",
-            "p-value",
             "Chromosomes to include",
         ]):
             label = QLabel(l)
@@ -122,10 +121,29 @@ class MyWidget(QWidget):
         groupbox3.setLayout(vbox3)
 
         # Category 4
-        groupbox4 = QGroupBox("Phasing")
-        g4_params = ["beagle_phasing", "fastphase_phasing", "no_phasing", "phase_params"]
+        groupbox4 = QGroupBox("Permutation Test")
+        g4_params = ["perm_test", "num_phenos", "num_windows", "p_value", "lrt_threshhold"]
         vbox4 = QVBoxLayout()
         self.category4_fields = {}
+        for i, l in enumerate([
+            "Permutation Test (True/[False])",
+            "# random phenotypes",
+            "# random windows",
+            "p-value",
+            "LRT threshold",
+        ]):
+            label = QLabel(l)
+            edit = QLineEdit()
+            vbox4.addWidget(label)
+            vbox4.addWidget(edit)
+            self.category4_fields[g4_params[i]] = edit
+        groupbox4.setLayout(vbox4)
+
+        # Category 5
+        groupbox5 = QGroupBox("Phasing")
+        g5_params = ["beagle_phasing", "fastphase_phasing", "no_phasing", "phase_params"]
+        vbox5 = QVBoxLayout()
+        self.category5_fields = {}
         for i, l in enumerate([
             "Beagle Phasing",
             "FastPHASE Phasing",
@@ -136,15 +154,34 @@ class MyWidget(QWidget):
                 yes = QRadioButton(l)
                 group = QButtonGroup()
                 group.addButton(yes)
-                vbox4.addWidget(yes)
-                self.category4_fields[g4_params[i]] = yes
+                vbox5.addWidget(yes)
+                self.category5_fields[g5_params[i]] = yes
             else:
                 label = QLabel(l)
                 edit = QLineEdit()
-                vbox4.addWidget(label)
-                vbox4.addWidget(edit)
-                self.category4_fields[g4_params[i]] = edit
-        groupbox4.setLayout(vbox4)
+                vbox5.addWidget(label)
+                vbox5.addWidget(edit)
+                self.category4_fields[g5_params[i]] = edit
+        groupbox5.setLayout(vbox5)
+
+        # Category 6
+        groupbox6 = QGroupBox("Heritability")
+        g6_params = ["estimate_h2", "qcovar", "covar", "num_autosomes", "num_h2_permutations"]
+        vbox6 = QVBoxLayout()
+        self.category6_fields = {}
+        for i, l in enumerate([
+            "Estimate Heritability [True/[False]]",
+            "Qcovar",
+            "Covar",
+            "# Autosomes",
+            "# heritability permutations",
+        ]):
+            label = QLabel(l)
+            edit = QLineEdit()
+            vbox6.addWidget(label)
+            vbox6.addWidget(edit)
+            self.category6_fields[g6_params[i]] = edit
+        groupbox6.setLayout(vbox6)
 
         self.params = {
             **self.category1_fields,
@@ -155,9 +192,11 @@ class MyWidget(QWidget):
 
         # Add the group boxes to the grid layout
         grid.addWidget(groupbox1, 0, 0)
-        grid.addWidget(groupbox2, 1, 1)
+        grid.addWidget(groupbox2, 0, 1)
         grid.addWidget(groupbox3, 1, 0)
-        grid.addWidget(groupbox4, 0, 1)
+        grid.addWidget(groupbox4, 1, 1)
+        grid.addWidget(groupbox5, 0, 2)
+        grid.addWidget(groupbox6, 1, 2)
 
         # Submit Button
         submit_button = QPushButton("Save")
@@ -182,7 +221,7 @@ class MyWidget(QWidget):
 
         self.setLayout(vbox)
         self.setWindowTitle("cLDLA params")
-        self.resize(800, 600)
+        self.resize(900, 600)
 
     def load_data(self):
         # Function to handle the "Load" button click
@@ -204,39 +243,39 @@ class MyWidget(QWidget):
 
     def validate(self):
         # # Function to validate the input fields
-        # if not self.params["SNP window size"].text().isdigit():
+        # if not self.params["window_size"].text().isdigit():
         #     QMessageBox.critical(self, "Error", "SNP window size must be an integer.")
         #     return False
-        # if not int(self.params["SNP window size"].text()) > 0:
+        # if not int(self.params["window_size"].text()) > 0:
         #     QMessageBox.critical(
         #         self, "Error", "SNP window size must be greater than 0."
         #     )
         #     return False
-        # if not is_float(self.params["Minor Allele Frequency (0 to 1)"].text()):
+        # if not is_float(self.params["maf"].text()):
         #     QMessageBox.critical(
         #         self, "Error", "Minor Allele Frequency must be a float."
         #     )
         #     return False
         # if (
-        #     0 >= float(self.params["Minor Allele Frequency (0 to 1)"].text())
-        #     or float(self.params["Minor Allele Frequency (0 to 1)"].text()) >= 1
+        #     0 >= float(self.params["maf"].text())
+        #     or float(self.params["maf"].text()) >= 1
         # ):
         #     QMessageBox.critical(
         #         self, "Error", "Minor Allele Frequency must be between 0 and 1."
         #     )
         #     return False
-        # if not self.params["Minimum depth"].text().isdigit():
+        # if not self.params["min_depth"].text().isdigit():
         #     QMessageBox.critical(self, "Error", "Minimum depth must be an integer.")
         #     return False
-        # if not int(self.params["Minimum depth"].text()) > 0:
+        # if not int(self.params["min_depth"].text()) > 0:
         #     QMessageBox.critical(self, "Error", "Minimum depth must be greater than 0.")
         #     return False
-        # if not self.params["Maximum depth"].text().isdigit():
+        # if not self.params["max_depth"].text().isdigit():
         #     QMessageBox.critical(self, "Error", "Maximum depth must be an integer.")
         #     return False
-        # if (not int(self.params["Maximum depth"].text()) > 0) or (
-        #     int(self.params["Maximum depth"].text())
-        #     < int(self.params["Minimum depth"].text())
+        # if (not int(self.params["max_depth"].text()) > 0) or (
+        #     int(self.params["max_depth"].text())
+        #     < int(self.params["min_depth"].text())
         # ):
         #     QMessageBox.critical(
         #         self,
@@ -244,27 +283,15 @@ class MyWidget(QWidget):
         #         "Maximum depth must be greater than 0 and the minimum depth.",
         #     )
         #     return False
-        # if not self.params["# random phenotypes"].text().isdigit():
-        #     QMessageBox.critical(
-        #         self, "Error", "# random phenotypes must be an integer."
-        #     )
-        #     return False
-        # if not self.params["# random windows"].text().isdigit():
-        #     QMessageBox.critical(self, "Error", "# random windows must be an integer.")
-        #     return False
-        # if not is_float(self.params["p-value"].text()):
-        #     QMessageBox.critical(self, "Error", "p-value must be a floating point.")
-        #     return False
         
         # # Loop to check if file paths are valid
         # for i in [
-        #     "Input file",
-        #     "Output directory",
-        #     "Samples file",
-        #     "SNP Ids to exclude",
-        #     "Parameter file",
-        #     "Phenotype file",
-        #     "Chromosomes to include",
+        #     "input",
+        #     "out_dir",
+        #     "samples",
+        #     "exclude_snps",
+        #     "param_file",
+        #     "pheno_file",
         # ]:
         #     if not os.path.exists(self.params[i].text()):
         #         QMessageBox.critical(self, "Error", f"{i} file path is invalid.")
@@ -299,6 +326,61 @@ class MyWidget(QWidget):
             self.params["phase_params"] = QLineEdit('None')
             return True
         
+        # Check ASReml
+        if self.params["run_asreml"].text() not in ["True", "False", "true", "false"]:
+            QMessageBox.critical(self, "Error", "Run ASReml must be True or False.")
+            return False
+        else:
+            if self.params["run_asreml"].text() in ["True", "true"]:
+                self.params["run_asreml"] = True
+            else:
+                self.params["run_asreml"] = False
+
+        # Check parallel
+        if self.params["run_parallel"].text() not in ["True", "False", "true", "false"]:
+            QMessageBox.critical(self, "Error", "Run in parallel must be True or False.")
+            return False
+        else:
+            if self.params["run_parallel"].text() in ["True", "true"]:
+                self.params["run_parallel"] = True
+                # check num processes to be run in parallel
+                if not self.params["nproc"].text().isdigit():
+                    QMessageBox.critical(self, "Error", "# processes to run in parallel must be an integer.")
+                    return False
+            else:
+                self.params["run_parallel"] = False
+                self.params["nproc"] = QLineEdit('None')
+
+        # Check heritability
+        if self.params["estimate_h2"].text() not in ["True", "False", "true", "false"]:
+            QMessageBox.critical(self, "Error", "Estimate heritability must be True or False.")
+            return False
+        else:
+            if self.params["estimate_h2"].text() in ["True", "true"]:
+                self.params["estimate_h2"] = True
+                # check inputs
+                if not self.params["num_autosomes"].text().isdigit():
+                    QMessageBox.critical(
+                        self, "Error", "# autosomes must be an integer."
+                    )
+                    return False
+                if not self.params["num_h2_permutations"].text().isdigit():
+                    QMessageBox.critical(self, "Error", "# heritability permutations must be an integer.")
+                    return False
+                # check covar file paths
+                if not is_float(self.params["qcovar"].text()):
+                    QMessageBox.critical(self, "Error", f"Qcovar must be a float.")
+                    return False
+                if not is_float(self.params["covar"].text()):
+                    QMessageBox.critical(self, "Error", f"Covar must be a float.")
+                    return False
+            else:
+                self.params["estimate_h2"] = False
+                self.params["qcovar"] = QLineEdit('None')
+                self.params["covar"] = QLineEdit('None')
+                self.params["num_autosomes"] = QLineEdit('None')
+                self.params["num_h2_permutations"] = QLineEdit('None')
+
         # Check permutation test
         if self.params["perm_test"].text() not in ["True", "False", "true", "false"]:
             QMessageBox.critical(self, "Error", "Permutation test must be True or False.")
