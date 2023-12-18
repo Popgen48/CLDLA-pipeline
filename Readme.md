@@ -1,4 +1,4 @@
-## Custom Scripts for the cLDLA pipeline
+## Custom Scripts for the cLDLA (combined linkage disequilibrium and linkage analysis) pipeline
 
 1. `vcf_to_hapmap.py`: Generate .hap, .map, and .par files for a particular window from a given .vcf file. Can also be used in parallel to generate .hap, .map, and .par files for all windows in a given .vcf file.
 
