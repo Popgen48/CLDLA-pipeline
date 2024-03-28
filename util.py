@@ -30,27 +30,27 @@ def read_vcf(vcf_path, window_size, window_number):
         # calculate maf only collect the genotypes if the maf is grt than 0
         maf = get_maf(record)
         
-        if maf[0] != 0 and maf[1] != 0:
+        #if maf[0] != 0 and maf[1] != 0:
             # Iterate through samples
-            for sample in record.samples:
-                sample_values = record.samples[sample]['GT']
-                if sample not in sample_genotypes:
-                    sample_genotypes[sample] = []
+        for sample in record.samples:
+            sample_values = record.samples[sample]['GT']
+            if sample not in sample_genotypes:
+                sample_genotypes[sample] = []
 
-                sample_genotypes[sample].append(sample_values)
-                
-            if not record.id:
-                record.id = f'{record.chrom}_{record.pos}'
-                
-            # While maf is collected here, it is not used in downstream analysis
-            mafs[record.id] = min(maf) / sum(maf)
+            sample_genotypes[sample].append(sample_values)
             
-            homozygosity = get_homozygosity(maf)
-            hzgys[record.id] = homozygosity
+        if not record.id:
+            record.id = f'{record.chrom}_{record.pos}'
             
-            positions[record.id] = record.pos / 1e6
-        else:
-            i -= 1
+        # While maf is collected here, it is not used in downstream analysis
+        mafs[record.id] = min(maf) / sum(maf)
+        
+        homozygosity = get_homozygosity(maf)
+        hzgys[record.id] = homozygosity
+        
+        positions[record.id] = record.pos / 1e6
+        #else:
+        #    i -= 1
 
     vcf.close()
 
@@ -61,6 +61,7 @@ def get_HAP(hap_path, sample_genotypes):
     string_ids = {}     # dictionary to store counts
     id1 = 1             # for individual haplotypes
     id2 = 1             # for combined haplotypes i.e. diplotype
+    max_d = 0
 
     with open(hap_path, 'w') as file:
         i = 1
@@ -94,18 +95,20 @@ def get_HAP(hap_path, sample_genotypes):
                     string_ids[combined_substr] = id2
                     id2 += 1
             d = string_ids[combined_substr]
-
+            max_d = d if d > max_d else max_d
+            str1 = " ".join(list(str1))
+            str2 = " ".join(list(str2))
             file.write(
-                f'{i}\t{d}\t{h1}\t{h2}\t{str1}\t{str2}\n'
+                f'{i} {h1} {h2} {d} {str1} {str2}\n'
             )  # tab delimited for readability
             i += 1
-    return len(samples)
+    return len(samples), max_d
 
 def get_MAP(map_path, positions, hzgys):
     with open(map_path, 'w') as file:
         for key in hzgys.keys():
-            file.write(f'{key}\t{positions[key]}\t{hzgys[key]}\n')
+            file.write(f'{key} {positions[key]} {hzgys[key]}\n')
             
 def get_PAR(par_path, window_size, window_number, n_samples):
     with open(par_path, 'w') as file:
-        file.write(f'100\n100\n{window_size+1}\n{window_number+1 if window_number <= int(window_size/2) else int(window_size/2)+1}\n{n_samples}')
+        file.write(f'100\n100\n{window_size+1}\n{window_number if window_number <= int(window_size/2) else int(window_size/2)+1}\n{n_samples}')
