@@ -19,7 +19,7 @@ g_job_list = []
 
 class AsremlMethods:
 
-    def prepare_asreml_params(self, infile, numdiplo, grm, prefix, model):
+    def prepare_params(self, infile, numdiplo, grm, prefix, model):
         outfile = f"{prefix}.as" if model == "h1" else grm.rstrip(".giv") + ".as"
         ilc = 0
         with open(outfile, "w") as dest:
@@ -61,9 +61,9 @@ class AsremlMethods:
                         dest.write(f"{line}")
                         dest.write("\n")
 
-    def run_h0_asreml(self, params_file, diplo, grm, phe, model):
+    def run_h0(self, params_file, diplo, grm, phe, model):
         prefix = grm.rstrip(".giv")
-        self.prepare_asreml_params(params_file, diplo, grm, phe, model)
+        self.prepare_params(params_file, diplo, grm, phe, model)
         rm_file_pattern = ".{ask,aov,msv,res,rsv,sln,tmp,tsv,veo,vvp,yht}"
         command = f"asreml -NS5 {prefix}.as && rm {prefix}{rm_file_pattern}"
         subprocess.call([command], shell=True)
@@ -100,9 +100,115 @@ class AsremlMethods:
         return conv_logl
 
 
+class Blupf90Methods:
+
+    def prepare_params(self, infile, numdiplo, grm, prefix, model):
+        param_dict = {
+            "NUMBER_OF_EFFECTS": False,
+            "OBSERVATION(S)": False,
+            "EFFECTS:": False,
+        }
+        rewrite_line = False
+        total_effect = 0
+        with open(prefix + ".params", "w") as dest:
+            dest.write(f"DATAFILE\n{prefix}.dat\n")
+            with open(infile) as source:
+                for line in source:
+                    line = line.rstrip()
+                    if (not line in param_dict and not rewrite_line) or len(line) == 0:
+                        dest.write(line)
+                        dest.write("\n")
+                    elif rewrite_line:
+                        if line != "RANDOM_RESIDUAL VALUES":
+                            pattern = re.compile(r"([0-9]+)")
+                            num_param = int(re.findall(pattern, line)[0])
+                            if not param_dict["EFFECTS:"]:
+                                if last_param == "NUMBER_OF_EFFECTS":
+                                    if model == "h0":
+                                        num_param = num_param
+                                    else:
+                                        num_param = num_param + 1
+                                else:
+                                    num_param = num_param - 1
+                                dest.write(str(num_param) + "\n")
+                                rewrite_line = False
+                                param_dict[last_param] = False
+                            else:
+                                num_param = (
+                                    num_param if total_effect == 0 else num_param - 1
+                                )
+                                dest.write(
+                                    str(num_param)
+                                    + " "
+                                    + " ".join(line.split()[1:])
+                                    + "\n"
+                                )
+                                total_effect += 1
+                                last_effect = num_param
+                        else:
+                            if model == "h1":
+                                dest.write(f"{last_effect+2} {numdiplo} cross")
+                                dest.write("\n")
+                            dest.write(line + "\n")
+                            rewrite_line = False
+                    else:
+                        param_dict[line] = True
+                        rewrite_line = True
+                        last_param = line
+                        dest.write(line + "\n")
+            dest.write(
+                f"RANDOM_GROUP\n1\nRANDOM_TYPE\nuser_file\nFILE\n{grm}\n(CO)VARIANCES\n1.0\n"
+            )
+            if model == "h1":
+                dest.write(
+                    f"RANDOM_GROUP\n{total_effect+1}\nRANDOM_TYPE\nuser_file\nFILE\n{prefix}.giv\n(CO)VARIANCES\n0.5"
+                )
+                dest.write("\n")
+            dest.write(f"OPTION method VCE")
+            dest.write("\n")
+            dest.write(f"OPTION maxrounds 100")
+            dest.write("\n")
+
+    def extract_logl(self, log_file):
+        pattern = re.compile(r"-2logL([^0-9]+)([0-9.]+)")
+        log_l = "na"
+        with open(log_file) as source:
+            for line in source:
+                line = line.rstrip()
+                if "-2logL" in line:
+                    match = re.findall(pattern, line)
+                    log_l = float(match[0][1])
+        return log_l
+
+    def prepare_datfile(self, phe, prefix):
+        with open(prefix + ".dat", "w") as dest:
+            with open(phe) as source:
+                for line in source:
+                    line = line.rstrip().split()
+                    del line[1]
+                    dest.write(" ".join(line) + "\n")
+
+    def run_h0(self, params_file, diplo, grm, phe, model):
+        prefix = grm.rstrip(".giv")
+        self.prepare_params(params_file, diplo, grm, prefix, model)
+        self.prepare_datfile(phe, prefix)
+        command = f"mkdir {prefix} && mv {prefix}.params ./{prefix} && cp {prefix}.* {prefix} && cd {prefix} && blupf90+ {prefix}.params && cp blupf90.log ../{prefix}.log && cd .. && rm -r {prefix}"
+        subprocess.call([command], shell=True)
+        log_l = self.extract_logl(f"{prefix}.log")
+        return log_l
+
+    def run_blupf90(self, list_i):
+        prefix, h0_logl, mid_win_point, grm = list_i
+        command = f"mkdir {prefix} && mv {prefix}.params ./{prefix} && cp {prefix}.* {prefix}/ && cp {grm} {prefix}/ && cd {prefix} && blupf90+ {prefix}.params && cp blupf90.log ../{prefix}.log && cd .. && rm -r {prefix}"
+        subprocess.call([command], shell=True)
+        h1_logl = self.extract_logl(f"{prefix}.log")
+        if h0_logl != "na" and h1_logl != "na":
+            return prefix, mid_win_point, h0_logl - h1_logl
+
+
 class util:
 
-    def prepare_dat_file(self, hap_path, pheno_file, prefix):
+    def prepare_dat_file(self, hap_path, pheno_file, prefix, tool):
         indi_diplo_dict = {}
         with open(prefix + ".dat", "w") as dest:
             with open(hap_path) as source:
@@ -115,6 +221,8 @@ class util:
                 lc = 0
                 for line in source:
                     line = line.rstrip().split()
+                    if tool == "blupf90":
+                        del line[1]
                     line.append(indi_diplo_dict[lc])
                     dest.write(" ".join(line))
                     dest.write("\n")
@@ -206,16 +314,25 @@ class VcfToLrt:
         tool,
         outprefix,
     ):
-        self.u = util()
-        self.asr = AsremlMethods()
+        self.u = util()  # object containing general method
+        self.asr = AsremlMethods()  # object containing asreml method
+        self.blp = Blupf90Methods()  # object contaning blupf90+ method
 
-        window_size = int(window_size)
-        vcf = pysam.VariantFile(vcf_path)
-        sample_list = make_sample_list(pheno_file)
+        window_size = int(window_size)  # window size in terms of number of SNPs
+        vcf = pysam.VariantFile(vcf_path)  # read vcf file
+        sample_list = make_sample_list(
+            pheno_file
+        )  # data file of phenotypes-->sample_index, sample_id, effect1 (x1), effect2 (x2),observation (y)
         dataset = outprefix
         window_number = 0
-        window_process_list = []
-        h0_logl = self.asr.run_h0_asreml(param_file, "na", grm, pheno_file, "h0")
+        window_process_list = (
+            []
+        )  # list will collect the parameters to run asreml and blupf90
+        # following condition will calculate the log-likelihood value of the null hypothesis
+        if tool == "asreml":
+            h0_logl = self.asr.run_h0(param_file, "na", grm, pheno_file, "h0")
+        else:
+            h0_logl = self.blp.run_h0(param_file, "na", grm, pheno_file, "h0")
         # Iterate through VCF records
         for i, record in enumerate(vcf):
             last_ele = -1
@@ -261,13 +378,23 @@ class VcfToLrt:
                 hzgys = g_list_homo_dict[1]
                 window_number += 1
                 win_min_point = np.median([list(positions.values())])
-                window_process_list.append(
-                    (
-                        f"{dataset}.{chromosome}.{window_number}",
-                        float(h0_logl),
-                        win_min_point,
+                if tool == "asreml":
+                    window_process_list.append(
+                        (
+                            f"{dataset}.{chromosome}.{window_number}",
+                            float(h0_logl),
+                            win_min_point,
+                        )
                     )
-                )
+                else:
+                    window_process_list.append(
+                        (
+                            f"{dataset}.{chromosome}.{window_number}",
+                            float(h0_logl),
+                            win_min_point,
+                            grm,
+                        )
+                    )
                 g_job_list.append(
                     (
                         dataset,
@@ -289,15 +416,23 @@ class VcfToLrt:
                 if len(g_job_list) == int(num_cores):
                     with Pool(processes=len(g_job_list)) as pool:
                         pool.map(self.create_ginverse, g_job_list, 1)
+                    with Pool(processes=len(window_process_list)) as pool:
+                        results = pool.map(self.blp.run_blupf90, window_process_list, 1)
+                    with open(outprefix + "_results.txt", "a") as dest:
+                        for result in results:
+                            if result:
+                                dest.write(f"{chromosome} {result[1]} {result[2]}\n")
                     del g_job_list[:]
+                    del window_process_list[:]
         with Pool(processes=len(g_job_list)) as pool:
             pool.map(self.create_ginverse, g_job_list, 1)
-        with Pool(processes=1) as pool:
-            results = pool.map(self.asr.run_asreml, window_process_list, 1)
-        with open(outprefix + "_results.txt", "w") as dest:
-            for result in results:
-                if result:
-                    dest.write(f"{chromosome} {result[1]} {result[2]}\n")
+        if tool == "asreml":
+            with Pool(processes=1) as pool:
+                results = pool.map(self.asr.run_asreml, window_process_list, 1)
+            with open(outprefix + "_results.txt", "w") as dest:
+                for result in results:
+                    if result:
+                        dest.write(f"{chromosome} {result[1]} {result[2]}\n")
         vcf.close()
 
     def create_ginverse(self, input_list):
@@ -324,10 +459,12 @@ class VcfToLrt:
         self.u.get_MAP(map_path, positions, hzgys)
         self.u.get_PAR(par_path, window_size, window_number, n_samples)
 
-        self.u.prepare_dat_file(hap_path, pheno_file, prefix)
+        self.u.prepare_dat_file(hap_path, pheno_file, prefix, tool)
 
         if tool == "asreml":
-            self.asr.prepare_asreml_params(params_file, max_d, grm, prefix, "h1")
+            self.asr.prepare_params(params_file, max_d, grm, prefix, "h1")
+        else:
+            self.blp.prepare_params(params_file, max_d, grm, prefix, "h1")
 
         command = (
             f"{dname}/cldla_snp {prefix} && {dname}/bend {prefix}.grm {prefix}.B.grm && {dname}/ginverse {max_d} {prefix}.B.grm {prefix}.giv"
@@ -388,11 +525,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t",
         "--tool",
-        metavar="String",
-        help="tool to be used --> asreml or blupf90",
         default="asreml",
-        required=False,
+        const="asreml",
+        nargs="?",
+        choices=["asreml", "blupf90"],
+        help="tools for variance component estimation --> asreml or blupf90 (default: %(default)s)",
     )
+
     parser.add_argument("-o", "--outprefix", help="output prefix", required=True)
 
     args = parser.parse_args()
